@@ -693,8 +693,7 @@ def fast_inner_ball(A, b):
 
             # And check whether the computed radius is negative
             if r < 0:
-                print(
-                    "The radius calculated has negative value. The polytope is infeasible or something went wrong with the solver"
-                )
+               e = "The radius calculated has negative value. The polytope is infeasible or something went wrong with the solver"
+               return ValueError(e)
             else:
                 return point, r
