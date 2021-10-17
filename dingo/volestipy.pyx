@@ -203,6 +203,8 @@ cdef class HPolytope:
       cdef int check_psrf
       cdef int parallel
 
+      e = "The radius calculated has negative value. The polytope is infeasible or something went wrong with the solver"
+
       if (psrf_check):
          check_psrf = 1
       else:
@@ -216,7 +218,11 @@ cdef class HPolytope:
       self.polytope_cpp.mmcs_initialize(n_variables, ess, check_psrf, parallel, num_threads)
 
       # Get max inscribed ball for the initial polytope
-      temp_center, radius = fast_inner_ball(self._A, self._b)
+      try: 
+         temp_center, radius = fast_inner_ball(self._A, self._b)
+      except:
+         return ValueError(e)
+
       cdef double[::1] inner_point_for_c = np.asarray(temp_center)
 
       while True:
@@ -227,7 +233,11 @@ cdef class HPolytope:
             break
 
          self.polytope_cpp.get_polytope_as_matrices(&new_A[0,0], &new_b[0])
-         new_temp_c, radius = fast_inner_ball(np.asarray(new_A), np.asarray(new_b))
+         try:
+            new_temp_c, radius = fast_inner_ball(np.asarray(new_A), np.asarray(new_b))
+         except:
+            return ValueError(e)
+
          inner_point_for_c = np.asarray(new_temp_c)
       
       cdef double[:,::1] samples = np.zeros((n_variables, N_samples), dtype=np.float64, order="C")
