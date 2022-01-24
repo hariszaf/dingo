@@ -28,7 +28,7 @@ def sample_on_polyround_processed_polytope(network):
    
    print("Dingo for the " + name + " model took " + str(sampling_runtime) + " sec, using time.procesess_time(), to sample using polyround processed polytope")
 
-   with open("steady_states/dingo_polyround" + name + ".pckl", "wb") as dingo_steadystates_file: 
+   with open("../steady_states/dingo_polyround" + name + ".pckl", "wb") as dingo_steadystates_file: 
          pickle.dump(steady_states, dingo_steadystates_file)
 
 if __name__ == '__main__':
