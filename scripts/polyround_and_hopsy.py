@@ -1,13 +1,13 @@
 #!/usr/bin/python
 
-import os, sys, time, getopt
+import os, sys, getopt
 import numpy as np
 import pickle
 from PolyRound.api import PolyRoundApi
 from PolyRound.static_classes.lp_utils import ChebyshevFinder
 from PolyRound.settings import PolyRoundSettings
 import hopsy
-
+from time import process_time
 
 def polyround_preprocess(model_path):
 
@@ -21,16 +21,16 @@ def polyround_preprocess(model_path):
     settings = PolyRoundSettings()
 
     # Simplify the polytope
-    start = time.time()
+    start = process_time()
     simplified_polytope = PolyRoundApi.simplify_polytope(polytope)
-    end   = time.time()
+    end   = process_time()
     time_for_simplification = end - start
     print("Polytope derived from the " + name + " network, took " + str(time_for_simplification) + " sec to get simplified.")
 
     # Polytope transformation
-    start = time.time()
+    start = process_time()
     transformed_polytope = PolyRoundApi.transform_polytope(simplified_polytope)
-    end   = time.time()
+    end   = process_time()
     time_for_transformation = end - start
     print("Polytope derived from the " + name + " network, took " + str(time_for_transformation) + " sec to get transformed.")
 
@@ -46,15 +46,10 @@ def polyround_preprocess(model_path):
         pickle.dump(polytope_info, polyround_polytope_file)
 
 
-
-
-    sys.exit(0)
-
-
     # Rounding
-    start = time.time()
+    start = process_time()
     rounded_polytope = PolyRoundApi.round_polytope(transformed_polytope)
-    end   = time.time()
+    end   = process_time()
     time_for_rounding = end - start
     print("Polytope derived from the " + name + " network, took " + str(time_for_rounding) + " sec to get rounded.")
 
@@ -78,12 +73,12 @@ def sample_on_rounded_polytope(name, rounded_polytope, psrf, walk_length):
     model = hopsy.UniformModel()
 
     # Build the problem using the rounded polytope and the model 
-    start   = time.time()
+    start   = process_time()
     problem = hopsy.Problem(rounded_polytope.A, rounded_polytope.b, model)
-    end     = time.time()
+    end     = process_time()
 
     # The run object contains and constructs the markov chains. 
-    start                        = time.time()
+    start                        = process_time()
     run                          = hopsy.Run(problem)
     run.sample_until_convergence = True
     run.diagnostics_threshold    = float(psrf)
@@ -91,14 +86,14 @@ def sample_on_rounded_polytope(name, rounded_polytope, psrf, walk_length):
 	    run.thinning                 = 100 * rounded_polytope.A.shape[1]
     elif walk_length == "8d2":
             run.thinning                 = 8 * rounded_polytope.A.shape[1] ^ 2 
-    end                          = time.time()
+    end                          = process_time()
     time_to_build_the_run        = end - start
     print("Polytope derived from the " + name + " network, took " + str(time_to_build_the_run) + " sec for Run hopsy building.")
 
     # We finally sample
-    start    = time.time()
+    start    = process_time()
     sampling = run.sample()
-    end                          = time.time()
+    end                          = process_time()
     time_for_run                 = end - start
     print("Polytope derived from the " + name + " network, took " + str(time_for_run) + " sec for hopsy sampling.")
 
@@ -156,10 +151,11 @@ if __name__ == '__main__':
             walk = i[1]
 
         if i[0] == "--polytope":
-            polytope_file = current_directory + "/" + i[1]
+            polytope_file = i[1]
+            #polytope_file = current_directory + "/" + i[1]
             name = polytope_file.split("/")[-1]
             name = name.split(".")[0][9:]
-            print("here is a name: " + name)
+            #print("here is a name: " + name)
             with open(polytope_file, "rb") as f:
                  obj = pickle.load(f)
             polytope = obj[0]

@@ -2,6 +2,7 @@ import os, sys
 import numpy as np
 from dingo import MetabolicNetwork, PolytopeSampler
 from dingo import plot_histogram
+from dingo import gmscale, apply_scaling
 from time import process_time
 import pickle
 import multiprocessing
@@ -16,10 +17,20 @@ def sample_on_polyround_processed_polytope(network):
       obj = pickle.load(f)
    polytope = obj[0]
 
+   A = polytope.A.to_numpy()
+   b = polytope.b.to_numpy()
+
+   res = gmscale(A, 0.99)
+   res = apply_scaling(A, b, res[0], res[1])
+
+   scaled_A = res[0]
+   scaled_b = res[1]
+
+
    # Sample from the polytope built using the parrallel MMCS 
    start = process_time() 
-   steady_states = PolytopeSampler.sample_from_polytope(polytope.A.to_numpy(), 
-							polytope.b.to_numpy(),
+   steady_states = PolytopeSampler.sample_from_polytope(scaled_A, 
+							scaled_b,
                                                    	psrf = True, 
                                                    	parallel_mmcs = False
                                                   	)
