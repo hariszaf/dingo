@@ -115,12 +115,12 @@ def sample_on_rounded_polytope(name, rounded_polytope, psrf, walk_length):
     #samples  = data.states
     run.data.states = np.concatenate(run.data.states)
     #print("Number of samples retrieved: " + str(len(samples[0])))
-    run.data.states = rounded_polytope.back_transform(run.data.states.T)
+    #run.data.states = rounded_polytope.back_transform(run.data.states.T)
     #non_mapped_samples = np.concatenate(samples)
     #mapped_states = rounded_polytope.back_transform(non_mapped_samples.T)
 
     samples_info = (
-        samples,
+        run.data.states,
         name,
     )
 
@@ -129,8 +129,11 @@ def sample_on_rounded_polytope(name, rounded_polytope, psrf, walk_length):
     ) as hopsy_samples_file:
         pickle.dump(samples_info, hopsy_samples_file)
 
+
+    run.data.states = rounded_polytope.back_transform(run.data.states.T)
+
     steady_states_info = (
-            mapped_states,
+            run.data.states,
             name,
     )
 
