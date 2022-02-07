@@ -108,16 +108,16 @@ def sample_on_rounded_polytope(name, rounded_polytope, psrf, walk_length):
     print("Polytope derived from the " + name + " network, took " + str(time_for_run) + " sec for hopsy sampling.")
 
     # From the run, we can now extract the produced data
-    data = run.data
+    #data = run.data
 
     # Samples is a list of lists of numpy.ndarrays, which can be casted to a numpy.ndarray
     # which then has the shape (m,n,d), where m is the number of chains, n the number of samples and d the dimenion
-    samples  = data.states
-    print("Number of samples retrieved: " + str(len(samples[0])))
-
-    non_mapped_samples = np.concatenate(samples)
-    mapped_states = rounded_polytope.back_transform(non_mapped_samples.T)
-    print("Samples from network " + name + "returned samples of shape: " + str(mapped_states.shape))
+    #samples  = data.states
+    run.data.states = np.concatenate(run.data.states)
+    #print("Number of samples retrieved: " + str(len(samples[0])))
+    run.data.states = rounded_polytope.back_transform(run.data.states.T)
+    #non_mapped_samples = np.concatenate(samples)
+    #mapped_states = rounded_polytope.back_transform(non_mapped_samples.T)
 
     samples_info = (
         samples,
