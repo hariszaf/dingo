@@ -41,7 +41,7 @@ def polyround_preprocess(model_path):
     )
 
     with open(
-        "simpl_transf_polytopes/polytope_" + name + ".pckl", "wb"
+        "simpified_polytope_" + name + ".pckl", "wb"
     ) as polyround_polytope_file:
         pickle.dump(polytope_info, polyround_polytope_file)
 
@@ -60,7 +60,7 @@ def polyround_preprocess(model_path):
     )
 
     with open(
-        "polyround_polytopes/polytope_" + name + ".pckl", "wb"
+        "polyrounded_polytope_" + name + ".pckl", "wb"
     ) as polyround_polytope_file:
         pickle.dump(polytope_info, polyround_polytope_file)
 
@@ -80,15 +80,25 @@ def sample_on_rounded_polytope(name, rounded_polytope, psrf, walk_length):
     # The run object contains and constructs the markov chains. 
     start                        = process_time()
     run                          = hopsy.Run(problem)
+
+    # fixed for the case of Recon3D as mentioned in HOPS paper
+    run.number_of_chains         = 5
+
     run.sample_until_convergence = True
     run.diagnostics_threshold    = float(psrf)
+
     if walk_length == "100d":
 	    run.thinning                 = 100 * rounded_polytope.A.shape[1]
     elif walk_length == "8d2":
             run.thinning                 = 8 * rounded_polytope.A.shape[1] ^ 2 
+
+    elif walk_length == "200d":
+            run.thinning                 = 200 * rounded_polytope.A.shape[1]
+
     end                          = process_time()
     time_to_build_the_run        = end - start
     print("Polytope derived from the " + name + " network, took " + str(time_to_build_the_run) + " sec for Run hopsy building.")
+
 
     # We finally sample
     start    = process_time()
@@ -115,7 +125,7 @@ def sample_on_rounded_polytope(name, rounded_polytope, psrf, walk_length):
     )
 
     with open(
-        "hopsy_samples/samples_of_" + name + "_" + str(psrf) + "_" + str(walk_length) + ".pckl", "wb"
+        "hopsy_samples/hopsy_samples_of_" + name + "_" + str(psrf) + "_" + str(walk_length) + ".pckl", "wb"
     ) as hopsy_samples_file:
         pickle.dump(samples_info, hopsy_samples_file)
 
@@ -142,7 +152,8 @@ if __name__ == '__main__':
 
         if i[0] == "--network":
             file_name = i[1]
-            path_to_net = current_directory + "/" + file_name
+            #path_to_net = current_directory + "/" + file_name
+            path_to_net = file_name
 
         if i[0]  == "--psrf":
             psrf = i[1]
@@ -162,6 +173,7 @@ if __name__ == '__main__':
 
     if file_name:
         rpolytope, name = polyround_preprocess(path_to_net)
+        sys.exit()
         sample_on_rounded_polytope(name, rpolytope, psrf, walk)
 
     if polytope:
