@@ -13,7 +13,7 @@ from dingo import MetabolicNetwork, PolytopeSampler
 from dingo.gurobi_based_implementations import fast_inner_ball
 
 
-class TestStringMethods(unittest.TestCase):
+class TestFastMethods(unittest.TestCase):
     def test_fast_max_bal_computation(self):
 
         m = 2
@@ -55,7 +55,7 @@ class TestStringMethods(unittest.TestCase):
 
         steady_states = sampler.generate_steady_states()
 
-        self.assertEqual(sampler.A.shape[0], 175)
+        self.assertEqual(sampler.A.shape[0], 26)
         self.assertEqual(sampler.A.shape[1], 24)
 
         self.assertEqual(steady_states.shape[0], 95)

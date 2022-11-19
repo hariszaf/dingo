@@ -7,6 +7,7 @@
 
 
 import numpy as np
+import warnings
 import math
 from dingo.MetabolicNetwork import MetabolicNetwork
 from dingo.fva import slow_fva
@@ -18,7 +19,12 @@ from dingo.utils import (
 
 try:
     import gurobipy
-    from dingo.gurobi_based_implementations import fast_fba, fast_fva, fast_inner_ball
+    from dingo.gurobi_based_implementations import (
+        fast_fba,
+        fast_fva,
+        fast_inner_ball,
+        fast_remove_redundant_facets,
+    )
 except ImportError as e:
     pass
 
@@ -28,9 +34,6 @@ from volestipy import HPolytope
 class PolytopeSampler:
     def __init__(self, metabol_net):
 
-        # print(isinstance(metabol_net, MetabolicNetwork))
-        # print(not isinstance(metabol_net, MetabolicNetwork))
-        # x= not isinstance(metabol_net, MetabolicNetwork)
         if not isinstance(metabol_net, MetabolicNetwork):
             raise Exception("An unknown input object given for initialization.")
 
@@ -48,6 +51,7 @@ class PolytopeSampler:
         ]
         self._parameters["distribution"] = "uniform"
         self._parameters["first_run_of_mmcs"] = True
+        self._parameters["remove_redundant_facets"] = True
 
         try:
             import gurobipy
@@ -60,7 +64,7 @@ class PolytopeSampler:
 
     def get_polytope(self):
         """A member function to derive the corresponding full dimensional polytope
-        and a isometric linear transformation.
+        and a isometric linear transformation that maps the latter to the initial space.
         """
 
         if (
@@ -73,34 +77,60 @@ class PolytopeSampler:
         ):
 
             (
-                min_fluxes,
-                max_fluxes,
                 max_biomass_flux_vector,
                 max_biomass_objective,
-            ) = self._metabolic_network.fva()
+            ) = self._metabolic_network.fba()
 
-            A, b, Aeq, beq = get_matrices_of_low_dim_polytope(
-                self._metabolic_network.S,
-                self._metabolic_network.lb,
-                self._metabolic_network.ub,
-                min_fluxes,
-                max_fluxes,
-            )
+            if (
+                self._parameters["fast_computations"]
+                and self._parameters["remove_redundant_facets"]
+            ):
+
+                A, b, Aeq, beq = fast_remove_redundant_facets(
+                    self._metabolic_network.lb,
+                    self._metabolic_network.ub,
+                    self._metabolic_network.S,
+                    self._metabolic_network.biomass_function,
+                    self._parameters["opt_percentage"],
+                )
+            else:
+                if (not self._parameters["fast_computations"]) and self._parameters[
+                    "remove_redundant_facets"
+                ]:
+                    warnings.warn(
+                        "We continue without redundancy removal (slow mode is ON)"
+                    )
+
+                (
+                    min_fluxes,
+                    max_fluxes,
+                    max_biomass_flux_vector,
+                    max_biomass_objective,
+                ) = self._metabolic_network.fva()
+
+                A, b, Aeq, beq = get_matrices_of_low_dim_polytope(
+                    self._metabolic_network.S,
+                    self._metabolic_network.lb,
+                    self._metabolic_network.ub,
+                    min_fluxes,
+                    max_fluxes,
+                )
 
             if (
                 A.shape[0] != b.size
                 or A.shape[1] != Aeq.shape[1]
                 or Aeq.shape[0] != beq.size
             ):
-                raise Exception("FVA failed.")
+                raise Exception("Preprocess for full dimensional polytope failed.")
 
             A = np.vstack((A, -self._metabolic_network.biomass_function))
 
             b = np.append(
                 b,
-                -(self._parameters["opt_percentage"] / 100)
+                -np.floor(max_biomass_objective / self._parameters["tol"])
                 * self._parameters["tol"]
-                * math.floor(max_biomass_objective / self._parameters["tol"]),
+                * self._parameters["opt_percentage"]
+                / 100,
             )
 
             (
@@ -173,11 +203,13 @@ class PolytopeSampler:
 
         P = HPolytope(A, b)
 
-        if self._parameters["fast_computations"]:
+        try:
+            import gurobipy
+
             A, b, Tr, Tr_shift, samples = P.fast_mmcs(
                 ess, psrf, parallel_mmcs, num_threads
             )
-        else:
+        except ImportError as e:
             A, b, Tr, Tr_shift, samples = P.slow_mmcs(
                 ess, psrf, parallel_mmcs, num_threads
             )
@@ -230,11 +262,13 @@ class PolytopeSampler:
 
         P = HPolytope(A, b)
 
-        if self._parameters["fast_computations"]:
+        try:
+            import gurobipy
+
             A, b, Tr, Tr_shift, samples = P.fast_mmcs(
                 ess, psrf, parallel_mmcs, num_threads
             )
-        else:
+        except ImportError as e:
             A, b, Tr, Tr_shift, samples = P.slow_mmcs(
                 ess, psrf, parallel_mmcs, num_threads
             )
@@ -270,6 +304,14 @@ class PolytopeSampler:
     @property
     def metabolic_network(self):
         return self._metabolic_network
+
+    def facet_redundancy_removal(self, value):
+        self._parameters["remove_redundant_facets"] = value
+
+        if (not self._parameters["fast_computations"]) and value:
+            warnings.warn(
+                "Since you are in slow mode the redundancy removal step is skipped (dingo does not currently support this functionality in slow mode)"
+            )
 
     def set_fast_mode(self):
 

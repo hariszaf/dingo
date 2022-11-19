@@ -2,6 +2,7 @@
 # dingo is part of GeomScale project
 
 # Copyright (c) 2021 Apostolos Chalkis
+# Copyright (c) 2021 Vissarion Fisikopoulos
 
 # Licensed under GNU LGPL.3, see LICENCE file
 
@@ -47,7 +48,7 @@ class MetabolicNetwork:
         self._biomass_function = tuple_args[6]
 
         try:
-            if (
+            if self._biomass_index is not None and (
                 self._lb.size != self._ub.size
                 or self._lb.size != self._S.shape[1]
                 or len(self._metabolites) != self._S.shape[0]
@@ -69,9 +70,7 @@ class MetabolicNetwork:
                 "An unknown input format given to initialize a metabolic network object."
             )
 
-        tuple_args = read_json_file(arg)
-
-        return cls(tuple_args)
+        return cls(read_json_file(arg))
 
     @classmethod
     def from_mat(cls, arg):
@@ -80,9 +79,7 @@ class MetabolicNetwork:
                 "An unknown input format given to initialize a metabolic network object."
             )
 
-        tuple_args = read_mat_file(arg)
-
-        return cls(tuple_args)
+        return cls(read_mat_file(arg))
 
     def fva(self):
         """A member function to apply the FVA method on the metabolic network."""
