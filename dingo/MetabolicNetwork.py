@@ -17,6 +17,7 @@ try:
     from dingo.gurobi_based_implementations import fast_fba, fast_fva, fast_inner_ball
 except ImportError as e:
     pass
+    
 
 
 class MetabolicNetwork:
@@ -27,12 +28,16 @@ class MetabolicNetwork:
         self._parameters["distribution"] = "uniform"
         self._parameters["nullspace_method"] = "sparseQR"
 
+        self._parameters["fast_computations"] = True
         try:
             import gurobipy
-
-            self._parameters["fast_computations"] = True
         except ImportError as e:
             self._parameters["fast_computations"] = False
+        try:
+            n = gurobipy.Model("TestModel")
+        except:
+            self._parameters["fast_computations"] = False
+
 
         if len(tuple_args) != 7:
             raise Exception(
@@ -193,7 +198,7 @@ class MetabolicNetwork:
         self._biomass_index = value
 
     @biomass_function.setter
-    def biomass_function(self, value):
+    def set_biomass_function(self, value):
         self._biomass_function = value
 
     def set_fast_mode(self):
