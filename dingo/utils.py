@@ -9,20 +9,61 @@ import numpy as np
 import math
 import scipy.sparse as sp
 from scipy.sparse import diags
+from scipy.stats import chi2_contingency
+from scipy.stats import spearmanr
 from dingo.scaling import gmscale
 from dingo.nullspace import nullspace_dense, nullspace_sparse
 
-def compute_copula(flux1, flux2, n):
-    """A Python function to estimate the copula between two fluxes
+
+def left_diagonal(matrix):
+    diagonal_elements = np.diag(matrix)
+    max_in_row = np.max(matrix - np.diag(diagonal_elements), axis=1)
+    return np.all(diagonal_elements > max_in_row)
+
+def right_diagonal(matrix):
+    flipped_matrix = np.fliplr(matrix)
+    diagonal_elements = np.diag(flipped_matrix)
+    max_in_row = np.max(flipped_matrix - np.diag(diagonal_elements), axis=1)
+    return np.all(diagonal_elements > max_in_row)
+
+
+def export_correlated_reaction_pairs(samples, n):
+    """A Python function to get pairs of correlated reactions using the copula approach
 
     Keyword arguments:
-    flux1: A vector that contains the measurements of the first reaxtion flux
-    flux2: A vector that contains the measurements of the second reaxtion flux
+    samples: A list of sample points with the flux value of each reaction at a steady state
     n: The number of cells
+    """
+    positive_cor_react_pairs = []
+    negative_cor_react_pairs = []
+    for index1, sample1 in enumerate(samples):
+        for index2, sample2 in enumerate(samples):
+            if index1 < index2:
+                copula = compute_copula(flux1=sample1, flux2=sample2, n=n)
+                if left_diagonal(copula):
+                    positive_cor_react_pairs.append((index1, index2))
+                if right_diagonal(copula):
+                    negative_cor_react_pairs.append((index1, index2))
+                # correlation_coefficient, p_value = spearmanr(sample1, sample2)
+                # expected_uniform_distribution = np.full_like(copula, 1/copula.size)
+                # chi2_stat, p_value, dof, expected_freq = chi2_contingency(expected_uniform_distribution)
+    return positive_cor_react_pairs, negative_cor_react_pairs
+
+
+def compute_copula(flux1, flux2, n):
+    """Estimate the copula between two fluxes.
+
+    Parameters:
+    - flux1: A vector containing measurements of the first reaction flux.
+    - flux2: A vector containing measurements of the second reaction flux.
+    - n: The number of cells.
+
+    Returns:
+    - copula: The estimated copula matrix.
     """
 
     N = flux1.size
-    copula = np.zeros([n,n], dtype=float)
+    copula = np.zeros((n, n), dtype=float)
 
     I1 = np.argsort(flux1)
     I2 = np.argsort(flux2)
@@ -30,17 +71,48 @@ def compute_copula(flux1, flux2, n):
     grouped_flux1 = np.zeros(N)
     grouped_flux2 = np.zeros(N)
 
+    indices = np.arange(N)
     for j in range(n):
-        rng = range((j*math.floor(N/n)),((j+1)*math.floor(N/n)))
+        rng = indices[j * (N // n): (j + 1) * (N // n)]
         grouped_flux1[I1[rng]] = j
         grouped_flux2[I2[rng]] = j
-    
+
     for i in range(n):
         for j in range(n):
-            copula[i,j] = sum((grouped_flux1==i) *( grouped_flux2==j))
-    
-    copula = copula / N
+            copula[i, j] = np.sum((grouped_flux1 == i) & (grouped_flux2 == j))
+
+    copula /= N
     return copula
+
+# def compute_copula(flux1, flux2, n):
+#     """A Python function to estimate the copula between two fluxes
+
+#     Keyword arguments:
+#     flux1: A vector that contains the measurements of the first reaxtion flux
+#     flux2: A vector that contains the measurements of the second reaxtion flux
+#     n: The number of cells
+#     """
+
+#     N = flux1.size
+#     copula = np.zeros([n,n], dtype=float)
+
+#     I1 = np.argsort(flux1)
+#     I2 = np.argsort(flux2)
+
+#     grouped_flux1 = np.zeros(N)
+#     grouped_flux2 = np.zeros(N)
+
+#     for j in range(n):
+#         rng = range((j*math.floor(N/n)),((j+1)*math.floor(N/n)))
+#         grouped_flux1[I1[rng]] = j
+#         grouped_flux2[I2[rng]] = j
+    
+#     for i in range(n):
+#         for j in range(n):
+#             copula[i,j] = sum((grouped_flux1==i) *( grouped_flux2==j))
+    
+#     copula = copula / N
+#     return copula
     
 
 def apply_scaling(A, b, cs, rs):
