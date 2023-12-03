@@ -9,18 +9,28 @@ import numpy as np
 import math
 import scipy.sparse as sp
 from scipy.sparse import diags
-from scipy.stats import chi2_contingency
-from scipy.stats import spearmanr
 from dingo.scaling import gmscale
 from dingo.nullspace import nullspace_dense, nullspace_sparse
 
 
 def left_diagonal(matrix):
+    """A Python function that checks whether the elements of the up-left to down-right diagonal of a matrix
+    are always the largest in their corresponding rows
+
+    Keywords arguments:
+    matrix: An ndarray
+    """
     diagonal_elements = np.diag(matrix)
     max_in_row = np.max(matrix - np.diag(diagonal_elements), axis=1)
     return np.all(diagonal_elements > max_in_row)
 
 def right_diagonal(matrix):
+    """A Python function that checks whether the elements of the up-right to down-left diagonal of a matrix
+    are always the largest in their corresponding rows
+
+    Keywords arguments:
+    matrix: An ndarray 
+    """
     flipped_matrix = np.fliplr(matrix)
     diagonal_elements = np.diag(flipped_matrix)
     max_in_row = np.max(flipped_matrix - np.diag(diagonal_elements), axis=1)
@@ -33,6 +43,9 @@ def export_correlated_reaction_pairs(samples, reactions, n=7):
     Keyword arguments:
     samples: An ndarry of sample points with the flux value of each reaction at a steady state
     n: The number of cells
+
+    usage:
+    pp, np = dingo.utils.export_correlated_reaction_pairs(steady_states, 5)
     """
     positive_cor_react_pairs = []
     negative_cor_react_pairs = []
@@ -44,9 +57,6 @@ def export_correlated_reaction_pairs(samples, reactions, n=7):
                     positive_cor_react_pairs.append((index1, index2))
                 if right_diagonal(copula):
                     negative_cor_react_pairs.append((index1, index2))
-                # correlation_coefficient, p_value = spearmanr(sample1, sample2)
-                # expected_uniform_distribution = np.full_like(copula, 1/copula.size)
-                # chi2_stat, p_value, dof, expected_freq = chi2_contingency(expected_uniform_distribution)
     return positive_cor_react_pairs, negative_cor_react_pairs
 
 
@@ -55,27 +65,34 @@ def export_reactions_correlated_with_reaction(samples, data_flux, n=7):
     samples: An ndarry of sample points with the flux value of each reaction at a steady state
     reaction_flux: A list that contains: (i) the vector of the measurements of the reaction of interest,
                                       (ii) the index of the first reaction
+    usage:
+    data_flux = [steady_states[72], 72]
+    pp, np = dingo.utils.export_reactions_correlated_with_reaction(steady_states, data_flux)
     """
     positive_cor_react_pairs = []
     negative_cor_react_pairs = []
     reaction_flux = data_flux[0]
     reaction_index = data_flux[1]
     for index, sample in enumerate(samples):
-        if reaction_index != index
-        copula = compute_copula(flux1=sample, flux2=reaction_flux, n=n)
-        if left_diagonal(copula):
-            positive_cor_react_pairs.append((reaction_index, index))
-        if right_diagonal(copula):
-            negative_cor_react_pairs.append((reaction_index, index))
+        if reaction_index != index:
+            copula = compute_copula(sample, reaction_flux, n)
+            if left_diagonal(copula):
+                positive_cor_react_pairs.append((reaction_index, index))
+            if right_diagonal(copula):
+                negative_cor_react_pairs.append((reaction_index, index))
     return positive_cor_react_pairs, negative_cor_react_pairs
 
 
 def export_reactions_correlated_with_metabolite(metabolite, dingo_model, cobra_model, samples, n=7):
-    """
+    """A Python function to get correlated reaction pairs for the production and the consumption of a specific metabolite.
+ 
     metabolite: The id of the metabolite of interest, e.g. "cpd00043", "mal__L_c", etc.
     dingo_model: The dingo model built from the reconstruction (metabolic network) under study
     cobra_model: A cobra model build from the same reconstruction 
     samples: An ndarry of sample points with the flux value of each reaction at a steady state
+
+    Usage:
+    a,b,c,d = dingo.utils.export_reactions_correlated_with_metabolite("mal__L_c",  model, cmodel, steady_states)
     """
 
     related_reactions = cobra_model.metabolites.get_by_id(metabolite).reactions
