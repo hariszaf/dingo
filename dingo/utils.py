@@ -27,11 +27,11 @@ def right_diagonal(matrix):
     return np.all(diagonal_elements > max_in_row)
 
 
-def export_correlated_reaction_pairs(samples, n):
+def export_correlated_reaction_pairs(samples, reactions, n=7):
     """A Python function to get pairs of correlated reactions using the copula approach
 
     Keyword arguments:
-    samples: A list of sample points with the flux value of each reaction at a steady state
+    samples: An ndarry of sample points with the flux value of each reaction at a steady state
     n: The number of cells
     """
     positive_cor_react_pairs = []
@@ -48,6 +48,79 @@ def export_correlated_reaction_pairs(samples, n):
                 # expected_uniform_distribution = np.full_like(copula, 1/copula.size)
                 # chi2_stat, p_value, dof, expected_freq = chi2_contingency(expected_uniform_distribution)
     return positive_cor_react_pairs, negative_cor_react_pairs
+
+
+def export_reactions_correlated_with_reaction(samples, data_flux, n=7):
+    """
+    samples: An ndarry of sample points with the flux value of each reaction at a steady state
+    reaction_flux: A list that contains: (i) the vector of the measurements of the reaction of interest,
+                                      (ii) the index of the first reaction
+    """
+    positive_cor_react_pairs = []
+    negative_cor_react_pairs = []
+    reaction_flux = data_flux[0]
+    reaction_index = data_flux[1]
+    for index, sample in enumerate(samples):
+        if reaction_index != index
+        copula = compute_copula(flux1=sample, flux2=reaction_flux, n=n)
+        if left_diagonal(copula):
+            positive_cor_react_pairs.append((reaction_index, index))
+        if right_diagonal(copula):
+            negative_cor_react_pairs.append((reaction_index, index))
+    return positive_cor_react_pairs, negative_cor_react_pairs
+
+
+def export_reactions_correlated_with_metabolite(metabolite, dingo_model, cobra_model, samples, n=7):
+    """
+    metabolite: The id of the metabolite of interest, e.g. "cpd00043", "mal__L_c", etc.
+    dingo_model: The dingo model built from the reconstruction (metabolic network) under study
+    cobra_model: A cobra model build from the same reconstruction 
+    samples: An ndarry of sample points with the flux value of each reaction at a steady state
+    """
+
+    related_reactions = cobra_model.metabolites.get_by_id(metabolite).reactions
+    producing_metabolite = []
+    consuming_metabolite = []
+    for react in related_reactions:
+        if metabolite in react.reactants:
+            consuming_metabolite.append(react)
+        else:
+            producing_metabolite.append(react)
+
+    positive_cor_react_pairs_for_metab_production = []
+    negative_cor_react_pairs_for_metab_production = []
+
+    for react in producing_metabolite:
+        react_index = dingo_model.reactions.index(react.id)
+        react_flux = samples[react_index, :]
+
+        for index, flux_sample in enumerate(samples):
+            if index != react_index:
+                copula = compute_copula(flux1=react_flux, flux2=flux_sample, n=n)
+                if left_diagonal(copula):
+                    positive_cor_react_pairs_for_metab_production.append((index, react_index))
+                if right_diagonal(copula):
+                    negative_cor_react_pairs_for_metab_production.append((index, react_index))
+
+    positive_cor_react_pairs_for_metab_consumption = []
+    negative_cor_react_pairs_for_metab_consumption = []
+
+    for react in consuming_metabolite:
+        react_index = dingo_model.reactions.index(react)
+        react_flux = samples[react_index, :]
+
+        for index, flux_sample in enumerate(samples):
+            if index != react_index:
+                copula = compute_copula(flux1=react_flux, flux2=flux_sample, n=n)
+                if left_diagonal(copula):
+                    positive_cor_react_pairs_for_metab_consumption.append((index, react_index))
+                if right_diagonal(copula):
+                    negative_cor_react_pairs_for_metab_consumption.append((index, react_index))
+
+
+    return positive_cor_react_pairs_for_metab_production, negative_cor_react_pairs_for_metab_production,\
+            positive_cor_react_pairs_for_metab_consumption, negative_cor_react_pairs_for_metab_consumption
+
 
 
 def compute_copula(flux1, flux2, n):
@@ -84,36 +157,6 @@ def compute_copula(flux1, flux2, n):
     copula /= N
     return copula
 
-# def compute_copula(flux1, flux2, n):
-#     """A Python function to estimate the copula between two fluxes
-
-#     Keyword arguments:
-#     flux1: A vector that contains the measurements of the first reaxtion flux
-#     flux2: A vector that contains the measurements of the second reaxtion flux
-#     n: The number of cells
-#     """
-
-#     N = flux1.size
-#     copula = np.zeros([n,n], dtype=float)
-
-#     I1 = np.argsort(flux1)
-#     I2 = np.argsort(flux2)
-
-#     grouped_flux1 = np.zeros(N)
-#     grouped_flux2 = np.zeros(N)
-
-#     for j in range(n):
-#         rng = range((j*math.floor(N/n)),((j+1)*math.floor(N/n)))
-#         grouped_flux1[I1[rng]] = j
-#         grouped_flux2[I2[rng]] = j
-    
-#     for i in range(n):
-#         for j in range(n):
-#             copula[i,j] = sum((grouped_flux1==i) *( grouped_flux2==j))
-    
-#     copula = copula / N
-#     return copula
-    
 
 def apply_scaling(A, b, cs, rs):
     """A Python function to apply the scaling computed by the function `gmscale` to a convex polytope
