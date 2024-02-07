@@ -38,6 +38,9 @@ For more information contact the mentors.
 
 [2] Wedmark, Y. K., Vik, J. O., & Øyås, O. (2023). [A hierarchy of metabolite exchanges in metabolic models of microbial species and communities](https://doi.org/10.1101/2023.09.05.556413). bioRxiv, 2023-09.
 
+<!-- also check for visualizations https://github.com/klamt-lab/straindesign/tree/main  -->
+
+
 
 ## Details of your coding project
 
