@@ -148,8 +148,14 @@ cFBA: https://doi.org/10.1371/journal.pone.0064567  -->
 Sampling on EFM: https://gitlab.com/YlvaKaW/exchange-enumeration/-/blob/main/multicellular_analysis_ove.ipynb -->
 
 
+<!-- still only as biorxiv: https://www.biorxiv.org/content/10.1101/2021.02.01.428114v1
+https://github.com/sysbiomelab/MIGRENE/blob/master/Functions/MakeCommunity.m -->
+
+
 <!-- [2] https://github.com/micom-dev/micom/blob/main/micom/community.py 
 Sampling on EFM: https://gitlab.com/YlvaKaW/exchange-enumeration/-/blob/main/multicellular_analysis_ove.ipynb -->
+
+
 
 
 
