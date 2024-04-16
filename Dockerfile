@@ -4,7 +4,7 @@ FROM gurobi/python
 # Install any additional dependencies for dingo
 RUN apt-get update && apt-get install -y \
 	cmake \
-    	lp-solve \
+	lp-solve \
 	git \
 	wget \
 	vim \
@@ -15,11 +15,16 @@ RUN apt-get update && apt-get install -y \
 # Install dependencies
 RUN apt-get update && apt-get install -y libsuitesparse-dev
 RUN pip install sparseqr \
-		Cython \
-		cobra \ 
-		kaleido
+	Cython \
+	cobra \ 
+	kaleido
 
-WORKDIR /app
+WORKDIR /dingo
+
+# Get lp-solve
+RUN wget https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_source.tar.gz &&\
+	tar xzvf lp_solve_5.5.2.11_source.tar.gz &&\
+	rm lp_solve_5.5.2.11_source.tar.gz
 
 # Get dingo
 RUN git clone https://github.com/GeomScale/dingo.git && \
