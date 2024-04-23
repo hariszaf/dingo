@@ -6,6 +6,7 @@
 # Licensed under GNU LGPL.3, see LICENCE file
 
 
+import copy
 import numpy as np
 import warnings
 import math
@@ -37,7 +38,7 @@ class PolytopeSampler:
         if not isinstance(metabol_net, MetabolicNetwork):
             raise Exception("An unknown input object given for initialization.")
 
-        self._metabolic_network = metabol_net
+        self._metabolic_network = copy.deepcopy(metabol_net)
         self._A = []
         self._b = []
         self._N = []
@@ -166,6 +167,7 @@ class PolytopeSampler:
             self._A, self._b, Tr, Tr_shift, samples = P.fast_mmcs(
                 ess, psrf, parallel_mmcs, num_threads
             )
+
         else:
             self._A, self._b, Tr, Tr_shift, samples = P.slow_mmcs(
                 ess, psrf, parallel_mmcs, num_threads
