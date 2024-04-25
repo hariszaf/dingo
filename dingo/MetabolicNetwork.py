@@ -332,6 +332,8 @@ class MetabolicNetwork:
             set_active_bound(
                 rxn_id, reac_index, min(0.0, -self._lb[reac_index] if is_export else self._ub[reac_index])
             )
+        self._medium = medium
+        self._opt_vector = None
 
     @reactions_map.setter
     def reactions_map(self, value):
