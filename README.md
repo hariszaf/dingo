@@ -284,6 +284,29 @@ sampler = polytope_sampler(model)
 steady_states = sampler.generate_steady_states()
 ```
 
+### Change the medium on your model 
+
+To do that, you need to first describe the new medium and then assign it on your `model`. 
+For example: 
+
+```python 
+initial_medium = model.medium
+model.medium
+# {'EX_co2_e': 1000.0, 'EX_glc__D_e': 10.0, 'EX_h_e': 1000.0, 'EX_h2o_e': 1000.0, 'EX_nh4_e': 1000.0, 'EX_o2_e': 1000.0, 'EX_pi_e': 1000.0}
+model.fba()[-1]
+# 0.8739215069684305
+new_medium = initial_medium.copy()
+
+# Set anoxygenic conditions 
+new_medium['EX_o2_e'] = 0
+model.medium = new_medium 
+model.fba()[-1]
+
+# Check the difference in the optimal value
+# 0.21166294973531055
+```
+
+
 
 
 ### Plot flux marginals
