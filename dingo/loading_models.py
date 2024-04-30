@@ -57,7 +57,7 @@ def read_mat_file(input_file):
     return (parse_cobra_model( model ))
 
 def read_sbml_file(input_file):
-    """A Python function, based on the cobra.io.read_sbml_model() function of cabrapy
+    """A Python function, based on the cobra.io.read_sbml_model() function of cobrapy
     and the extract_polytope() function of PolyRound
     (https://gitlab.com/csb.ethz/PolyRound/-/blob/master/PolyRound/static_classes/parse_sbml_stoichiometry.py)
     to read an SBML file (.xml) and return:
@@ -144,6 +144,5 @@ def parse_cobra_model(cobra_model):
     metabolites_map = pd.DataFrame( [x.name for x in cobra_model.metabolites], [x.id for x in cobra_model.metabolites])
     metabolites_map.columns = ["metabolite_name"]
 
-    return lb, ub, S, metabolites, reactions, \
-        biomass_index, biomass_function, medium, inter_medium, exchanges, \
-            reactions_map, metabolites_map
+    return lb, ub, S, metabolites, reactions, biomass_index, biomass_function, \
+        medium, inter_medium, exchanges, reactions_map, metabolites_map

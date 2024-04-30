@@ -16,29 +16,36 @@ class TestFba(unittest.TestCase):
         input_file_json = os.getcwd() + "/ext_data/e_coli_core.json"
         model = MetabolicNetwork.from_json(input_file_json)
         model.set_slow_mode()
-        res = model.fba()
-
+        res = model._fba()
         self.assertTrue(abs(res[1] - 0.8739215067486387) < 1e-03)
+
+        biomass_function = model.reactions[model.biomass_index]
+        fba_df = model.fba()
+        self.assertTrue(abs(fba_df.loc[biomass_function]["fluxes"] - 0.8739215067486387) < 1e-03)
 
     def test_fba_mat(self):
 
         input_file_mat = os.getcwd() + "/ext_data/e_coli_core.mat"
         model = MetabolicNetwork.from_mat(input_file_mat)
         model.set_slow_mode()
-
-        res = model.fba()
-
+        res = model._fba()
         self.assertTrue(abs(res[1] - 0.8739215067486387) < 1e-03)
+
+        biomass_function = model.reactions[model.biomass_index]
+        fba_df = model.fba()
+        self.assertTrue(abs(fba_df.loc[biomass_function]["fluxes"] - 0.8739215067486387) < 1e-03)
 
     def test_fba_sbml(self):
 
         input_file_sbml = os.getcwd() + "/ext_data/e_coli_core.xml"
         model = MetabolicNetwork.from_sbml(input_file_sbml)
         model.set_slow_mode()
-
-        res = model.fba()
-
+        res = model._fba()
         self.assertTrue(abs(res[1] - 0.8739215067486387) < 1e-03)
+
+        biomass_function = model.reactions[model.biomass_index]
+        fba_df = model.fba()
+        self.assertTrue(abs(fba_df.loc[biomass_function]["fluxes"] - 0.8739215067486387) < 1e-03)
 
     def test_modify_medium(self):
 
@@ -50,7 +57,8 @@ class TestFba(unittest.TestCase):
             model.set_slow_mode()
 
         initial_medium = model.medium
-        initial_fba = model.fba()[-1]
+        initial_fba = model._fba()[-1]
+        initial_fba_df = model.fba()
 
         # Original indices of the exchange reactions
         e_coli_core_medium_compound_indices = {
@@ -82,7 +90,16 @@ class TestFba(unittest.TestCase):
         self.assertTrue(model.lb[glc_index] == -35 and model.lb[o2_index] == -0.5)
 
         # Check if optimal value is affected
-        self.assertTrue( abs((model.fba()[-1] - initial_fba) - 0.1172) <= 1e-03)
+        self.assertTrue(
+            abs((model._fba()[-1] - initial_fba) - 0.1172) <= 1e-03
+        )
+
+
+        biomass_function = model.reactions[model.biomass_index]
+        fba_df = model.fba()
+        self.assertTrue(
+            abs((fba_df.loc[biomass_function]["fluxes"] - initial_fba_df.loc[biomass_function]["fluxes"]) - 0.1172) <= 1e-03
+        )
 
 
 if __name__ == "__main__":

@@ -111,7 +111,7 @@ class MetabolicNetwork:
 
         return cls(parse_cobra_model(arg))
 
-    def fva(self):
+    def _fva(self):
         """A member function to apply the FVA method on the metabolic network."""
 
         if self._parameters["fast_computations"]:
@@ -136,7 +136,7 @@ class MetabolicNetwork:
         self._opt_value = max_biomass_objective
         return min_fluxes, max_fluxes, max_biomass_flux_vector, max_biomass_objective
 
-    def fba(self):
+    def _fba(self):
         """A member function to apply the FBA method on the metabolic network."""
 
         if self._parameters["fast_computations"]:
@@ -147,15 +147,15 @@ class MetabolicNetwork:
         self._opt_value = opt_value
         return opt_vector, opt_value
 
-    def fba_to_df(self):
+    def fba(self):
         if not hasattr(self, '_opt_vector'):
-            self.fba()
+            self._fba()
         fba_df = pd.DataFrame({'fluxes': self._opt_vector}, index=self._reactions)
         return fba_df
 
-    def fva_to_df(self):
+    def fva(self):
         if not hasattr(self, '_min_fluxes'):
-            self.fva()
+            self._fva()
         fva_df = pd.DataFrame({'minimum': self._min_fluxes, 'maximum': self._max_fluxes}, index=self._reactions)
         return fva_df
 
@@ -209,20 +209,20 @@ class MetabolicNetwork:
         return self._metabolites_map
 
     @property
-    def opt_value(self, value):
-        self._opt_value = value
+    def opt_value(self):
+        return self._opt_value
 
     @property
-    def opt_vector(self, value):
-        self._opt_vector = value
+    def opt_vector(self):
+        return self._opt_vector
 
     @property
-    def min_fluxes(self, value):
-        self._min_fluxes = value
+    def min_fluxes(self):
+        return self._min_fluxes
 
     @property
-    def max_fluxes(self, value):
-        self._max_fluxes = value
+    def max_fluxes(self):
+        return self._max_fluxes
 
     @property
     def get_as_tuple(self):

@@ -319,6 +319,23 @@ model.fba()[-1]
 # 0.21166294973531055
 ```
 
+### Who-is-who
+
+Models may use ids for metabolites and reactions hard to interpret. 
+You may use the `reactions_map` and the `metabolites_map` that return the reactions/metabolites ids along with their corresponding names. 
+For example: 
+
+```python
+>>> model.reactions_map
+                                         reaction_name
+PFK                                Phosphofructokinase
+PFL                             Pyruvate formate lyase
+PGI                      Glucose-6-phosphate isomerase
+PGK                            Phosphoglycerate kinase
+PGL                          6-phosphogluconolactonase
+```
+
+
 
 
 

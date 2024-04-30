@@ -81,7 +81,7 @@ class PolytopeSampler:
             (
                 max_biomass_flux_vector,
                 max_biomass_objective,
-            ) = self._metabolic_network.fba()
+            ) = self._metabolic_network._fba()
 
             if (
                 self._parameters["fast_computations"]
@@ -108,7 +108,7 @@ class PolytopeSampler:
                     max_fluxes,
                     max_biomass_flux_vector,
                     max_biomass_objective,
-                ) = self._metabolic_network.fva()
+                ) = self._metabolic_network._fva()
 
                 A, b, Aeq, beq = get_matrices_of_low_dim_polytope(
                     self._metabolic_network.S,
@@ -318,7 +318,7 @@ class PolytopeSampler:
         num_threads -- the number of threads to use for parallel mmcs
         """
 
-        min_fluxes, max_fluxes, opt_vector, opt_value = model.fva()
+        min_fluxes, max_fluxes, opt_vector, opt_value = model._fva()
 
         A, b, Aeq, beq = get_matrices_of_low_dim_polytope(
             model.S, min_fluxes, max_fluxes, opt_percentage, model._parameters["tol"]
