@@ -44,7 +44,8 @@ jobs:
           # poetry show -v
           # source $(poetry env info --path)/bin/activate
           # poetry install;
-          pip3 install numpy scipy;
+          # pip3 install numpy scipy;
+          pip install .
       - name: Run tests
         run: |
           # poetry run python3 tests/fba.py;
