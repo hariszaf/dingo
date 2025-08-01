@@ -18,10 +18,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
+
+      # - name: Set up Python ${{ matrix.python-version }}
+      #   uses: actions/setup-python@v2
+      #   with:
+      #     python-version: ${{ matrix.python-version }}
+
+      # Set up Python 3.11 to run cibuildwheel
+      - name: Set up Python 3.11 for cibuildwheel
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.11
 
       - name: Load submodules
         run: |
@@ -29,7 +36,6 @@ jobs:
 
       - name: Download and unzip the boost library
         run: |
-          # wget -O boost_1_76_0.tar.bz2 https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2;
           curl -O https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2;
           tar -xjf boost_1_76_0.tar.bz2;
           rm boost_1_76_0.tar.bz2;
@@ -43,14 +49,19 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get install libsuitesparse-dev;
+          pip install --upgrade setuptools wheel cython numpy
           pip install cibuildwheel
-          # pip install .
-          # pip install -e .  # or `pip install dist/*.whl` if you prefer to install from wheel
+
+      # - name: Install dingo for linux
+      #   run: /
+      #     pip install .
 
       - name: Build wheels for Linux
         run: cibuildwheel --output-dir dist
         env:
           CIBW_PLATFORM: linux
+          CIBW_PYTHON_VERSION: 3.8 # Target Python 3.8 for wheel build
+
       - uses: actions/upload-artifact@v4
         with:
           name: wheels
