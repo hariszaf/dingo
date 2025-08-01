@@ -62,7 +62,9 @@ jobs:
 
       - name: Install built wheel on the gh VM to run tests (only cp310)
         run: |
-          WHEEL_FILE=$(ls dist/*cp310-manylinux_x86_64.whl | head -n 1)
+          echo "All wheels in dist/"
+          ls dist/
+          WHEEL_FILE=$(ls dist/*cp310*manylinux*_x86_64.whl | head -n 1)
           pip install "$WHEEL_FILE"
 
       - name: Run tests
