@@ -19,7 +19,7 @@ from dingo.utils import (
 
 from dingo.pyoptinterface_based_impl import fba,fva,inner_ball,remove_redundant_facets
 
-from volestipy import HPolytope
+from dingo.volestipy import HPolytope
 
 
 class PolytopeSampler:
@@ -185,8 +185,8 @@ class PolytopeSampler:
         samples_T = samples.T
 
         steady_states = map_samples_to_steady_states(
-                samples_T, self._N, self._N_shift
-            )
+            samples_T, self._N, self._N_shift
+        )
 
         return steady_states
 
@@ -210,7 +210,6 @@ class PolytopeSampler:
         A, b, Tr, Tr_shift, samples = P.mmcs(
             ess, psrf, parallel_mmcs, num_threads, solver
         )
-
 
         return samples
 

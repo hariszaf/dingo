@@ -29,7 +29,7 @@ from dingo.PolytopeSampler import PolytopeSampler
 
 from dingo.pyoptinterface_based_impl import fba, fva, inner_ball, remove_redundant_facets, set_default_solver
 
-from volestipy import HPolytope
+from dingo.volestipy import HPolytope
 
 __version__ = "0.1.7"
 
