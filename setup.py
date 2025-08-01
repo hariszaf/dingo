@@ -10,6 +10,7 @@
 import re
 import numpy
 import platform
+
 from os.path import join
 from Cython.Build import cythonize
 from setuptools import setup, Extension
@@ -24,6 +25,9 @@ current_platform = platform.system()
 #                           "-DRoleIsExternalInvEngine", "-DINVERSE_ACTIVE=3", "-DLoadableBlasLib=0"]
 
 
+# Add these flags to explicitly disable SIMD extensions on x86
+disable_simd_flags = ["-mno-sse", "-mno-sse2", "-mno-avx"]
+
 # Compiler arguments
 link_args = ["-O3"]
 compiler_args = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR", "-ldl", "-lm"]
@@ -37,9 +41,15 @@ if current_platform == "Linux":
     link_args.append("-fopenmp")
     compiler_args.append("-fopenmp")
 elif current_platform == "Darwin":  # macOS
-    # Ensure that OpenMP is supported on macOS by using libomp
-    link_args.append("-Xpreprocessor -fopenmp -lomp")
-    compiler_args.append("-Xpreprocessor -fopenmp -lomp")
+    link_args.extend(["-Xpreprocessor", "-fopenmp", "-lomp"])
+    compiler_args.extend(["-Xpreprocessor", "-fopenmp", "-lomp"])
+
+# Apply SIMD-disabling flags only on x86 systems
+arch = platform.machine()
+if arch in ("x86_64", "i386", "i686"):
+    compiler_args = disable_simd_flags + compiler_args
+
+
 
 
 # Ext
