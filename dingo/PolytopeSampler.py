@@ -29,23 +29,28 @@ class PolytopeSampler:
             raise Exception("An unknown input object given for initialization.")
 
         self._metabolic_network = metabol_net
-        self._A = []
-        self._b = []
-        self._N = []
-        self._N_shift = []
-        self._T = []
-        self._T_shift = []
-        self._parameters = {}
-        self._parameters["nullspace_method"] = "sparseQR"
-        self._parameters["opt_percentage"] = self.metabolic_network.parameters[
-            "opt_percentage"
-        ]
-        self._parameters["distribution"] = "uniform"
-        self._parameters["first_run_of_mmcs"] = True
-        self._parameters["remove_redundant_facets"] = True
+        # self._A       = []
+        # self._b       = []
+        # self._N       = []
+        # self._N_shift = []
+        # self._T       = []
+        # self._T_shift = []
 
-        self._parameters["tol"] = 1e-06
-        self._parameters["solver"] = None
+        self._A       = np.empty((0, 0))  # Empty 2D array
+        self._b       = np.empty((0,))    # Empty 1D array
+        self._N       = np.empty((0, 0))  # Empty 2D array
+        self._N_shift = np.empty((0,))    # Empty 1D array
+        self._T       = np.empty((0, 0))  # Empty 2D array
+        self._T_shift = np.empty((0,))    # Empty 1D array
+
+        self._parameters = {}
+        self._parameters["tol"]                     = 1e-06
+        self._parameters["solver"]                  = None
+        self._parameters["distribution"]            = "uniform"
+        self._parameters["nullspace_method"]        = "sparseQR"
+        self._parameters["opt_percentage"]          = self.metabolic_network.parameters["opt_percentage"]
+        self._parameters["first_run_of_mmcs"]       = True
+        self._parameters["remove_redundant_facets"] = True
 
     def get_polytope(self):
         """A member function to derive the corresponding full dimensional polytope
@@ -53,12 +58,18 @@ class PolytopeSampler:
         """
 
         if (
-            self._A == []
-            or self._b == []
-            or self._N == []
-            or self._N_shift == []
-            or self._T == []
-            or self._T_shift == []
+            # self._A          == []
+            # or self._b       == []
+            # or self._N       == []
+            # or self._N_shift == []
+            # or self._T       == []
+            # or self._T_shift == []
+            self._A.size          == 0
+            or self._b.size       == 0
+            or self._N.size       == 0
+            or self._N_shift.size == 0
+            or self._T.size       == 0
+            or self._T_shift.size == 0
         ):
 
             (
@@ -181,7 +192,16 @@ class PolytopeSampler:
         else:
             bias_vector = bias_vector.astype('float64')
 
-        samples = P.generate_samples(method.encode('utf-8'), n, burn_in, thinning, variance, bias_vector, self._parameters["solver"], ess)
+        samples = P.generate_samples(
+            method.encode('utf-8'),
+            n,
+            burn_in,
+            thinning,
+            variance,
+            bias_vector,
+            self._parameters["solver"],
+            ess
+        )
         samples_T = samples.T
 
         steady_states = map_samples_to_steady_states(

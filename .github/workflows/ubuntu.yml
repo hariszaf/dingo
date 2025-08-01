@@ -11,6 +11,8 @@ on: [push, pull_request]
 
 jobs:
   build-linux:
+    name: Build Linux-based distributions
+
     runs-on: ubuntu-latest
     strategy:
       matrix:
