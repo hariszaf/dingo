@@ -43,6 +43,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get install libsuitesparse-dev;
+          pip install cibuildwheel
           # pip install .
           # pip install -e .  # or `pip install dist/*.whl` if you prefer to install from wheel
 
@@ -50,6 +51,10 @@ jobs:
         run: cibuildwheel --output-dir dist
         env:
           CIBW_PLATFORM: linux
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels
+          path: dist/
 
       - name: Install the built wheel
         run: pip install dist/*.whl # Install from the built wheel file
@@ -62,16 +67,6 @@ jobs:
           python3 tests/scaling.py;
           python3 tests/sampling.py;
           python3 tests/sampling_no_multiphase.py;
-
-      - name: Build wheels for Linux
-        run: cibuildwheel --output-dir dist
-        env:
-          CIBW_PLATFORM: linux
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wheels
-          path: dist/
 
   # build-macos:
 
