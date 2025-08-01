@@ -46,7 +46,7 @@ jobs:
           pip install cibuildwheel
 
       - name: Build wheels for Linux
-        run: cibuildwheel --output-dir dist
+        run: CIBW_SKIP="pp*" CIBW_BUILD="cp310*" CIBW_PYTHON_VERSION="3.10" cibuildwheel --output-dir dist
 
       - uses: actions/upload-artifact@v4
         with:
