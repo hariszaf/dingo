@@ -9,15 +9,39 @@
 # This is the setup Python script for building the dingo library
 import re
 import numpy
+import platform
 from os.path import join
 from Cython.Build import cythonize
 from setuptools import setup, Extension
 
+# Determine the OS
+current_platform = platform.system()
+
 # Compiler arguments
-link_args              = ["-O3", "-fopenmp"]
-compiler_args          = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR", "-ldl", "-lm", "-fopenmp"]
-lp_solve_compiler_args = ["-DYY_NEVER_INTERACTIVE", "-DLoadInverseLib=0", "-DLoadLanguageLib=0",
-                          "-DRoleIsExternalInvEngine", "-DINVERSE_ACTIVE=3", "-DLoadableBlasLib=0"]
+# link_args              = ["-O3", "-fopenmp"]
+# compiler_args          = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR", "-ldl", "-lm", "-fopenmp"]
+# lp_solve_compiler_args = ["-DYY_NEVER_INTERACTIVE", "-DLoadInverseLib=0", "-DLoadLanguageLib=0",
+#                           "-DRoleIsExternalInvEngine", "-DINVERSE_ACTIVE=3", "-DLoadableBlasLib=0"]
+
+
+# Compiler arguments
+link_args = ["-O3"]
+compiler_args = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR", "-ldl", "-lm"]
+lp_solve_compiler_args = [
+    "-DYY_NEVER_INTERACTIVE", "-DLoadInverseLib=0", "-DLoadLanguageLib=0",
+    "-DRoleIsExternalInvEngine", "-DINVERSE_ACTIVE=3", "-DLoadableBlasLib=0"
+]
+
+# Set specific arguments for Linux or macOS
+if current_platform == "Linux":
+    link_args.append("-fopenmp")
+    compiler_args.append("-fopenmp")
+elif current_platform == "Darwin":  # macOS
+    # Ensure that OpenMP is supported on macOS by using libomp
+    link_args.append("-Xpreprocessor -fopenmp -lomp")
+    compiler_args.append("-Xpreprocessor -fopenmp -lomp")
+
+
 # Ext
 volesti_include_dirs = [
     # include binding files
