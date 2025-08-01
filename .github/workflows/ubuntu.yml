@@ -46,15 +46,24 @@ jobs:
           pip install cibuildwheel
 
       - name: Build wheels for Linux
-        run: CIBW_SKIP="pp*" CIBW_BUILD="cp310*" CIBW_PYTHON_VERSION="3.10" cibuildwheel --output-dir dist
+        # run: CIBW_SKIP="pp*" CIBW_BUILD="cp310*" CIBW_PYTHON_VERSION="3.10" cibuildwheel --output-dir dist
+        env:
+          CIBW_BUILD: "cp310-manylinux_x86_64" # Remove -manylinux_x86_64 once everything works fine to build all distributions
+          CIBW_SKIP: "pp*"
+          CIBW_ARCHS_LINUX: "x86_64"
+          CIBW_PYTHON_VERSION: "3.10"
+        run: |
+          cibuildwheel --output-dir dist
 
       - uses: actions/upload-artifact@v4
         with:
           name: wheels
           path: dist/
 
-      - name: Install the built wheel
-        run: pip install dist/*.whl # Install from the built wheel file
+      - name: Install built wheel on the gh VM to run tests (only cp310)
+        run: |
+          WHEEL_FILE=$(ls dist/*cp310-manylinux_x86_64.whl | head -n 1)
+          pip install "$WHEEL_FILE"
 
       - name: Run tests
         run: |
