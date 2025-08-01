@@ -319,3 +319,19 @@ The default number of cells is 5x5=25. dingo uses the package `plotly` for plott
 ![histogram](./doc/aconta_ppc_copula.png)
 
 
+<!-- 
+pyproject.toml: This defines the build system.
+
+setup.py: This contains the setup logic for setuptools.
+
+setup.cfg: This provides configuration for setuptools.
+
+In somce cases you may need to add CFLAGS="-I/usr/include/suitesparse"  in the beginning of the following command
+pip install .
+
+python setup.py sdist bdist_wheel
+
+
+-> for the test PyPi:
+twine upload --verbose --repository testpypi dist/*
+ -->

@@ -14,21 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.8]
+        python-version: [3.10]
 
     steps:
       - uses: actions/checkout@v2
 
-      # - name: Set up Python ${{ matrix.python-version }}
-      #   uses: actions/setup-python@v2
-      #   with:
-      #     python-version: ${{ matrix.python-version }}
-
-      # Set up Python 3.11 to run cibuildwheel
-      - name: Set up Python 3.11 for cibuildwheel
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.11
+          python-version: ${{ matrix.python-version }}
 
       - name: Load submodules
         run: |
@@ -51,10 +45,6 @@ jobs:
           sudo apt-get install libsuitesparse-dev;
           pip install --upgrade setuptools wheel cython numpy
           pip install cibuildwheel
-
-      # - name: Install dingo for linux
-      #   run: /
-      #     pip install .
 
       - name: Build wheels for Linux
         run: cibuildwheel --output-dir dist
