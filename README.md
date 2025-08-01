@@ -18,13 +18,15 @@ metabolic network, namely Flux Balance Analysis and Flux Variability Analysis.
 
 ## Installation
 
-**Note:** Python version should be 3.8.x. You can check this by running the following command in your terminal:
+<!-- **Note:** Python version should be 3.8.x. You can check this by running the following command in your terminal:
 ```bash
 python --version
 ```
-If you have a different version of Python installed, you'll need to install it ([start here](https://linuxize.com/post/how-to-install-python-3-8-on-ubuntu-18-04/)) and update-alternatives ([start here](https://linuxhint.com/update_alternatives_ubuntu/))
+If you have a different version of Python installed, you'll need to install it ([start here](https://linuxize.com/post/how-to-install-python-3-8-on-ubuntu-18-04/)) and update-alternatives ([start here](https://linuxhint.com/update_alternatives_ubuntu/)).
 
-**Note:** If you are using `GitHub Codespaces`. Start [here](https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/setting-up-your-python-project-for-codespaces) to set the python version. Once your Python version is `3.8.x` you can start following the below instructions.
+**Note:** If you are using `GitHub Codespaces`. 
+Start [here](https://docs.github.com/en/codespaces/setting-up-your-project-for-codespaces/adding-a-dev-container-configuration/setting-up-your-python-project-for-codespaces) to set the python version. 
+Once your Python version is `3.8.x` you can start following the below instructions. -->
 
 
 

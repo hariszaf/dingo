@@ -31,6 +31,8 @@ from dingo.pyoptinterface_based_impl import fba, fva, inner_ball, remove_redunda
 
 from volestipy import HPolytope
 
+__version__ = "0.1.7"
+
 
 def get_name(args_network):
 
@@ -75,7 +77,7 @@ def dingo_main():
 
     # Move to the output directory
     os.chdir(output_path_dir)
-    
+
     set_default_solver(args.solver)
 
     if args.model_name is None:
@@ -133,7 +135,7 @@ def dingo_main():
             raise Exception("An unknown format file given.")
 
         model.set_solver(args.solver)
-        
+
         result_obj = model.fva()
 
         with open("dingo_fva_" + name + ".pckl", "wb") as dingo_fva_file:
@@ -147,7 +149,7 @@ def dingo_main():
             model = MetabolicNetwork.fom_mat(args.metabolic_network)
         else:
             raise Exception("An unknown format file given.")
-        
+
         model.set_solver(args.solver)
 
         result_obj = model.fba()

@@ -5,18 +5,15 @@ try:
     from Cython.Build import cythonize
 # Do nothing if Cython is not available
 except ImportError:
-    # Got to provide this function. Otherwise, poetry will fail
+    # Provide a placeholder function for the setup process if Cython is missing
     def build(setup_kwargs):
         pass
-
-
-# Cython is installed. Compile
 else:
     from setuptools import Extension
     from setuptools.dist import Distribution
     from distutils.command.build_ext import build_ext
 
-    # This function will be executed in setup.py:
+    # This function will be executed in setup.py (or by setuptools directly)
     def build(setup_kwargs):
         # The file you want to compile
         extensions = ["dingo/volestipy.pyx"]
@@ -30,7 +27,7 @@ else:
             "-lm",
         ]
 
-        # Build
+        # Update setup kwargs to include Cython extensions and custom build
         setup_kwargs.update(
             {
                 "ext_modules": cythonize(

@@ -7,33 +7,19 @@
 # Licensed under GNU LGPL.3, see LICENCE file
 
 # This is the setup Python script for building the dingo library
-
-from distutils.core import setup
-from distutils.core import Extension
-from Cython.Build import cythonize
-from os.path import join
+import re
 import numpy
-import os
+from os.path import join
+from Cython.Build import cythonize
+from setuptools import setup, Extension
 
-# information about the dingo library
-version = "0.1.0"
-license = ("LGPL3",)
-packages = ["dingo"]
-description = "A python library for metabolic networks sampling and analysis"
-author = "Apostolos Chalkis"
-author_email = "tolis.chal@gmail.com"
-name = "dingo"
-
-
-source_directory_list = ["dingo", join("dingo", "bindings")]
-
-compiler_args = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR", "-ldl", "-lm", "-fopenmp"]
+# Compiler arguments
+link_args              = ["-O3", "-fopenmp"]
+compiler_args          = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR", "-ldl", "-lm", "-fopenmp"]
 lp_solve_compiler_args = ["-DYY_NEVER_INTERACTIVE", "-DLoadInverseLib=0", "-DLoadLanguageLib=0",
-"-DRoleIsExternalInvEngine", "-DINVERSE_ACTIVE=3", "-DLoadableBlasLib=0"]
-
-link_args = ["-O3", "-fopenmp"]
-
-extra_volesti_include_dirs = [
+                          "-DRoleIsExternalInvEngine", "-DINVERSE_ACTIVE=3", "-DLoadableBlasLib=0"]
+# Ext
+volesti_include_dirs = [
     # include binding files
     join("dingo", "bindings"),
     # the volesti code uses some external classes.
@@ -58,58 +44,61 @@ extra_volesti_include_dirs = [
     join("volesti", "include", "cartesian_geom"),
 ]
 
-src_files = ["lp_solve_5.5/bfp/bfp_LUSOL/lp_LUSOL.c"
-    , "lp_solve_5.5/bfp/bfp_LUSOL/LUSOL/lusol.c"
-    , "lp_solve_5.5/colamd/colamd.c"
-    , "lp_solve_5.5/ini.c"
-    , "lp_solve_5.5/shared/commonlib.c"
-    , "lp_solve_5.5/shared/mmio.c"
-    , "lp_solve_5.5/shared/myblas.c"
-    , "lp_solve_5.5/lp_crash.c"
-    , "lp_solve_5.5/lp_Hash.c"
-    , "lp_solve_5.5/lp_lib.c"
-    , "lp_solve_5.5/lp_matrix.c"
-    , "lp_solve_5.5/lp_MDO.c"
-    , "lp_solve_5.5/lp_mipbb.c"
-    , "lp_solve_5.5/lp_MPS.c"
-    , "lp_solve_5.5/lp_params.c"
-    , "lp_solve_5.5/lp_presolve.c"
-    , "lp_solve_5.5/lp_price.c"
-    , "lp_solve_5.5/lp_pricePSE.c"
-    , "lp_solve_5.5/lp_report.c"
-    , "lp_solve_5.5/lp_scale.c"
-    , "lp_solve_5.5/lp_simplex.c"
-    , "lp_solve_5.5/lp_SOS.c"
-    , "lp_solve_5.5/lp_utils.c"
-    , "lp_solve_5.5/lp_wlp.c"
-    , "dingo/volestipy.pyx"
-    , "dingo/bindings/bindings.cpp"]
+src_files = [
+    "lp_solve_5.5/bfp/bfp_LUSOL/lp_LUSOL.c",
+    "lp_solve_5.5/bfp/bfp_LUSOL/LUSOL/lusol.c",
+    "lp_solve_5.5/colamd/colamd.c",
+    "lp_solve_5.5/ini.c",
+    "lp_solve_5.5/shared/commonlib.c",
+    "lp_solve_5.5/shared/mmio.c",
+    "lp_solve_5.5/shared/myblas.c",
+    "lp_solve_5.5/lp_crash.c",
+    "lp_solve_5.5/lp_Hash.c",
+    "lp_solve_5.5/lp_lib.c",
+    "lp_solve_5.5/lp_matrix.c",
+    "lp_solve_5.5/lp_MDO.c",
+    "lp_solve_5.5/lp_mipbb.c",
+    "lp_solve_5.5/lp_MPS.c",
+    "lp_solve_5.5/lp_params.c",
+    "lp_solve_5.5/lp_presolve.c",
+    "lp_solve_5.5/lp_price.c",
+    "lp_solve_5.5/lp_pricePSE.c",
+    "lp_solve_5.5/lp_report.c",
+    "lp_solve_5.5/lp_scale.c",
+    "lp_solve_5.5/lp_simplex.c",
+    "lp_solve_5.5/lp_SOS.c",
+    "lp_solve_5.5/lp_utils.c",
+    "lp_solve_5.5/lp_wlp.c",
+    "dingo/volestipy.pyx",
+    "dingo/bindings/bindings.cpp"
+]
 
 # Return the directory that contains the NumPy *.h header files.
 # Extension modules that need to compile against NumPy should use this
 # function to locate the appropriate include directory.
-extra_include_dirs = [numpy.get_include()]
+numpy_dirs       = [numpy.get_include()]
+suitesparse_dirs = ["/usr/include/suitesparse"]  # Include the SuiteSparse headers
+include_dirs     = volesti_include_dirs + suitesparse_dirs + numpy_dirs
 
-ext_module = Extension(
-    "volestipy",
-    language="c++",
-    sources=src_files,
-    include_dirs=extra_include_dirs + extra_volesti_include_dirs,
-    extra_compile_args=compiler_args + lp_solve_compiler_args,
-    extra_link_args=link_args,
-)
-print("The Extension function is OK.")
-
-ext_modules = cythonize([ext_module], gdb_debug=False)
-print("The cythonize function ran fine!")
-
-setup(
-    version=version,
-    author=author,
-    author_email=author_email,
-    name=name,
-    packages=packages,
-    ext_modules=ext_modules,
+# --- Extension ---
+volesti_module = Extension(
+    name               = "dingo.volestipy",
+    language           = "c++",
+    sources            = src_files,
+    include_dirs       = include_dirs,
+    extra_compile_args = compiler_args + lp_solve_compiler_args,
+    extra_link_args    = link_args,
 )
 
-print("Installation of dingo completed.")
+ext_modules = cythonize(
+    [volesti_module],
+    gdb_debug=False
+)
+
+
+if __name__ == "__main__":
+    setup(
+        packages     = ["dingo", "dingo.bindings"],
+        ext_modules  = ext_modules,
+        zip_safe     = False,
+    )
