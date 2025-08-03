@@ -50,8 +50,6 @@ if arch in ("x86_64", "i386", "i686"):
     compiler_args = disable_simd_flags + compiler_args
 
 
-
-
 # Ext
 volesti_include_dirs = [
     # include binding files
@@ -115,6 +113,9 @@ suitesparse_dirs = ["/usr/include/suitesparse"]  # Include the SuiteSparse heade
 include_dirs     = volesti_include_dirs + suitesparse_dirs + numpy_dirs
 
 # --- Extension ---
+print("Using compiler args:", compiler_args)
+print("Using linker args:", link_args)
+
 volesti_module = Extension(
     name               = "dingo.volestipy",
     language           = "c++",

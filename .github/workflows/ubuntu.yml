@@ -142,8 +142,10 @@ jobs:
           CIBW_ARCHS_MACOS: "x86_64"
           CIBW_PYTHON_VERSION: "3.10"
           CIBW_ENVIRONMENT: >
-            CFLAGS='-arch x86_64 -I${HOMEBREW_PREFIX}/opt/suite-sparse/include/suitesparse -mno-sse -mno-sse2 -mno-avx'
-            LDFLAGS='-L${HOMEBREW_PREFIX}/opt/suite-sparse/lib'
+            CFLAGS='-std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -I/opt/homebrew/opt/suite-sparse/include/suitesparse'
+            CXXFLAGS='-std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx'
+            LDFLAGS='-L/opt/homebrew/opt/suite-sparse/lib -lomp'
+
         run: |
           cibuildwheel --output-dir dist
 
