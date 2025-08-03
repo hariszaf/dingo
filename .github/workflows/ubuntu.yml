@@ -120,20 +120,21 @@ jobs:
 
       - name: Install Homebrew deps
         run: |
-          brew install suite-sparse llvm
+          brew install suite-sparse llvm libomp
+          echo "HOMEBREW_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
 
-      - name: Set compiler environment for LLVM
+      - name: Set compiler environment for LLVM (portable)
         run: |
-          echo "CC=/opt/homebrew/opt/llvm/bin/clang" >> $GITHUB_ENV
-          echo "CXX=/opt/homebrew/opt/llvm/bin/clang++" >> $GITHUB_ENV
-          echo 'LDFLAGS=-L/opt/homebrew/opt/llvm/lib -L/opt/homebrew/opt/libomp/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/libomp/lib -lomp' >> $GITHUB_ENV
-          echo 'CPPFLAGS=-I/opt/homebrew/opt/llvm/include -I/opt/homebrew/opt/suite-sparse/include/suitesparse' >> $GITHUB_ENV
-          echo 'CFLAGS=-arch x86_64 -I/opt/homebrew/opt/suite-sparse/include/suitesparse -mno-sse -mno-sse2 -mno-avx' >> $GITHUB_ENV
-          echo "PATH=/opt/homebrew/opt/llvm/bin:$PATH" >> $GITHUB_ENV
+          echo "CC=${HOMEBREW_PREFIX}/opt/llvm/bin/clang" >> $GITHUB_ENV
+          echo "CXX=${HOMEBREW_PREFIX}/opt/llvm/bin/clang++" >> $GITHUB_ENV
+          echo "LDFLAGS=-L${HOMEBREW_PREFIX}/opt/llvm/lib -L${HOMEBREW_PREFIX}/opt/libomp/lib -Wl,-rpath,${HOMEBREW_PREFIX}/opt/llvm/lib -Wl,-rpath,${HOMEBREW_PREFIX}/opt/libomp/lib -lomp" >> $GITHUB_ENV
+          echo "CPPFLAGS=-I${HOMEBREW_PREFIX}/opt/llvm/include -I${HOMEBREW_PREFIX}/opt/suite-sparse/include/suitesparse" >> $GITHUB_ENV
+          echo "CFLAGS=-arch x86_64 -I${HOMEBREW_PREFIX}/opt/suite-sparse/include/suitesparse -mno-sse -mno-sse2 -mno-avx" >> $GITHUB_ENV
+          echo "PATH=${HOMEBREW_PREFIX}/opt/llvm/bin:$PATH" >> $GITHUB_ENV
 
       - name: Install Python build tools
         run: |
-          pip install --upgrade setuptools wheel cython numpy cibuildwheel
+          pip install --upgrade pip setuptools wheel cython numpy cibuildwheel
 
       - name: Build wheels for macOS
         env:
@@ -141,8 +142,8 @@ jobs:
           CIBW_ARCHS_MACOS: "x86_64"
           CIBW_PYTHON_VERSION: "3.10"
           CIBW_ENVIRONMENT: >
-            CFLAGS='-arch x86_64 -I/opt/homebrew/opt/suite-sparse/include/suitesparse -mno-sse -mno-sse2 -mno-avx'
-            LDFLAGS='-L/opt/homebrew/opt/suite-sparse/lib'
+            CFLAGS='-arch x86_64 -I${HOMEBREW_PREFIX}/opt/suite-sparse/include/suitesparse -mno-sse -mno-sse2 -mno-avx'
+            LDFLAGS='-L${HOMEBREW_PREFIX}/opt/suite-sparse/lib'
         run: |
           cibuildwheel --output-dir dist
 
