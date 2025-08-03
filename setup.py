@@ -50,32 +50,48 @@ current_platform = platform.system()
 #     compiler_args = disable_simd_flags + compiler_args
 # ===========================
 
+# Determine platform
+current_platform = platform.system()
+arch = platform.machine()
 
-# Compiler arguments
+# Base compiler/linker arguments
 base_compiler_args = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR"]
 base_link_args     = ["-O3"]
 
 # LP_Solve specific flags
 lp_solve_compiler_args = [
-    "-DYY_NEVER_INTERACTIVE", "-DLoadInverseLib=0", "-DLoadLanguageLib=0",
-    "-DRoleIsExternalInvEngine", "-DINVERSE_ACTIVE=3", "-DLoadableBlasLib=0"
+    "-DYY_NEVER_INTERACTIVE",
+    "-DLoadInverseLib=0",
+    "-DLoadLanguageLib=0",
+    "-DRoleIsExternalInvEngine",
+    "-DINVERSE_ACTIVE=3",
+    "-DLoadableBlasLib=0"
 ]
 
-# SIMD disabling (only for x86)
-arch               = platform.machine()
+# SIMD disabling (only for x86 architectures)
 disable_simd_flags = []
 if arch in ("x86_64", "i386", "i686"):
     disable_simd_flags = ["-mno-sse", "-mno-sse2", "-mno-avx"]
 
 # Platform-specific settings
 if current_platform == "Darwin":
-    base_compiler_args.extend(["-Xpreprocessor", "-fopenmp", "-lomp"])
-    base_link_args.extend(["-Xpreprocessor", "-fopenmp", "-lomp", "-ldl", "-lm"])
+    base_compiler_args.extend([
+        "-Xpreprocessor", "-fopenmp",
+        "-lomp",  # usually needed during compile too
+        "-stdlib=libc++"
+    ])
+    base_link_args.extend([
+        "-Xpreprocessor", "-fopenmp",
+        "-lomp",
+        "-stdlib=libc++",
+        "-ldl", "-lm"
+    ])
+
 elif current_platform == "Linux":
     base_compiler_args.append("-fopenmp")
     base_link_args.extend(["-fopenmp", "-ldl", "-lm"])
 
-# Final combined compiler flags
+# Final compiler/linker flags
 compiler_args = disable_simd_flags + base_compiler_args + lp_solve_compiler_args
 link_args = base_link_args
 

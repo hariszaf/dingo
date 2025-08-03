@@ -118,19 +118,16 @@ jobs:
           tar xzvf lp_solve_5.5.2.11_source.tar.gz
           rm lp_solve_5.5.2.11_source.tar.gz
 
-      - name: Install Homebrew deps
-        run: |
-          brew install suite-sparse llvm libomp
-          echo "HOMEBREW_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
+          - name: Install Homebrew deps
+          run: |
+            brew install suite-sparse llvm libomp
+            echo "HOMEBREW_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
 
-      - name: Set compiler environment for LLVM (portable)
+      - name: Set compiler environment
         run: |
-          echo "CC=${HOMEBREW_PREFIX}/opt/llvm/bin/clang" >> $GITHUB_ENV
-          echo "CXX=${HOMEBREW_PREFIX}/opt/llvm/bin/clang++" >> $GITHUB_ENV
-          echo "LDFLAGS=-L${HOMEBREW_PREFIX}/opt/llvm/lib -L${HOMEBREW_PREFIX}/opt/libomp/lib -Wl,-rpath,${HOMEBREW_PREFIX}/opt/llvm/lib -Wl,-rpath,${HOMEBREW_PREFIX}/opt/libomp/lib -lomp" >> $GITHUB_ENV
-          echo "CPPFLAGS=-I${HOMEBREW_PREFIX}/opt/llvm/include -I${HOMEBREW_PREFIX}/opt/suite-sparse/include/suitesparse" >> $GITHUB_ENV
-          echo "CFLAGS=-arch x86_64 -I${HOMEBREW_PREFIX}/opt/suite-sparse/include/suitesparse -mno-sse -mno-sse2 -mno-avx" >> $GITHUB_ENV
-          echo "PATH=${HOMEBREW_PREFIX}/opt/llvm/bin:$PATH" >> $GITHUB_ENV
+          echo "CC=$(brew --prefix)/opt/llvm/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix)/opt/llvm/bin/clang++" >> $GITHUB_ENV
+          echo "PATH=$(brew --prefix)/opt/llvm/bin:$PATH" >> $GITHUB_ENV
 
       - name: Install Python build tools
         run: |
@@ -140,14 +137,13 @@ jobs:
         env:
           CIBW_BUILD: "cp310-macosx_x86_64"
           CIBW_ARCHS_MACOS: "x86_64"
-          CIBW_PYTHON_VERSION: "3.10"
           CIBW_ENVIRONMENT: >
-            CFLAGS='-std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -I/opt/homebrew/opt/suite-sparse/include/suitesparse'
-            CXXFLAGS='-std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx'
-            LDFLAGS='-L/opt/homebrew/opt/suite-sparse/lib -lomp'
-
-        run: |
-          cibuildwheel --output-dir dist
+            CC=$(brew --prefix)/opt/llvm/bin/clang
+            CXX=$(brew --prefix)/opt/llvm/bin/clang++
+            CFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -I$(brew --prefix)/opt/suite-sparse/include/suitesparse'
+            CXXFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -stdlib=libc++'
+            LDFLAGS='-stdlib=libc++ -L$(brew --prefix)/opt/llvm/lib -L$(brew --prefix)/opt/suite-sparse/lib -lomp'
+        run: cibuildwheel --output-dir dist
 
       - uses: actions/upload-artifact@v4
         with:
