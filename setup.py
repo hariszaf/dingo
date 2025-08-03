@@ -24,31 +24,60 @@ current_platform = platform.system()
 # lp_solve_compiler_args = ["-DYY_NEVER_INTERACTIVE", "-DLoadInverseLib=0", "-DLoadLanguageLib=0",
 #                           "-DRoleIsExternalInvEngine", "-DINVERSE_ACTIVE=3", "-DLoadableBlasLib=0"]
 
+# =========================
+# # Add these flags to explicitly disable SIMD extensions on x86
+# disable_simd_flags = ["-mno-sse", "-mno-sse2", "-mno-avx"]
 
-# Add these flags to explicitly disable SIMD extensions on x86
-disable_simd_flags = ["-mno-sse", "-mno-sse2", "-mno-avx"]
+# # Compiler arguments
+# link_args = ["-O3"]
+# compiler_args = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR", "-ldl", "-lm"]
+# lp_solve_compiler_args = [
+#     "-DYY_NEVER_INTERACTIVE", "-DLoadInverseLib=0", "-DLoadLanguageLib=0",
+#     "-DRoleIsExternalInvEngine", "-DINVERSE_ACTIVE=3", "-DLoadableBlasLib=0"
+# ]
+
+# # Set specific arguments for Linux or macOS
+# if current_platform == "Linux":
+#     link_args.append("-fopenmp")
+#     compiler_args.append("-fopenmp")
+# elif current_platform == "Darwin":  # macOS
+#     link_args.extend(["-Xpreprocessor", "-fopenmp", "-lomp"])
+#     compiler_args.extend(["-Xpreprocessor", "-fopenmp", "-lomp"])
+
+# # Apply SIMD-disabling flags only on x86 systems
+# arch = platform.machine()
+# if arch in ("x86_64", "i386", "i686"):
+#     compiler_args = disable_simd_flags + compiler_args
+# ===========================
+
 
 # Compiler arguments
-link_args = ["-O3"]
-compiler_args = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR", "-ldl", "-lm"]
+base_compiler_args = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR"]
+base_link_args     = ["-O3"]
+
+# LP_Solve specific flags
 lp_solve_compiler_args = [
     "-DYY_NEVER_INTERACTIVE", "-DLoadInverseLib=0", "-DLoadLanguageLib=0",
     "-DRoleIsExternalInvEngine", "-DINVERSE_ACTIVE=3", "-DLoadableBlasLib=0"
 ]
 
-# Set specific arguments for Linux or macOS
-if current_platform == "Linux":
-    link_args.append("-fopenmp")
-    compiler_args.append("-fopenmp")
-elif current_platform == "Darwin":  # macOS
-    link_args.extend(["-Xpreprocessor", "-fopenmp", "-lomp"])
-    compiler_args.extend(["-Xpreprocessor", "-fopenmp", "-lomp"])
-
-# Apply SIMD-disabling flags only on x86 systems
-arch = platform.machine()
+# SIMD disabling (only for x86)
+arch               = platform.machine()
+disable_simd_flags = []
 if arch in ("x86_64", "i386", "i686"):
-    compiler_args = disable_simd_flags + compiler_args
+    disable_simd_flags = ["-mno-sse", "-mno-sse2", "-mno-avx"]
 
+# Platform-specific settings
+if current_platform == "Darwin":
+    base_compiler_args.extend(["-Xpreprocessor", "-fopenmp", "-lomp"])
+    base_link_args.extend(["-Xpreprocessor", "-fopenmp", "-lomp", "-ldl", "-lm"])
+elif current_platform == "Linux":
+    base_compiler_args.append("-fopenmp")
+    base_link_args.extend(["-fopenmp", "-ldl", "-lm"])
+
+# Final combined compiler flags
+compiler_args = disable_simd_flags + base_compiler_args + lp_solve_compiler_args
+link_args = base_link_args
 
 # Ext
 volesti_include_dirs = [
