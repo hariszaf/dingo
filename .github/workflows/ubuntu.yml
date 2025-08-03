@@ -118,10 +118,10 @@ jobs:
           tar xzvf lp_solve_5.5.2.11_source.tar.gz
           rm lp_solve_5.5.2.11_source.tar.gz
 
-          - name: Install Homebrew deps
-          run: |
-            brew install suite-sparse llvm libomp
-            echo "HOMEBREW_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
+      - name: Install Homebrew deps
+        run: |
+          brew install suite-sparse llvm libomp
+          echo "HOMEBREW_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
 
       - name: Set compiler environment
         run: |
