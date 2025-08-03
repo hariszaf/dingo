@@ -54,11 +54,8 @@ current_platform = platform.system()
 current_platform = platform.system()
 arch = platform.machine()
 
-# Base compiler/linker arguments
-base_compiler_args = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR"]
-base_link_args     = ["-O3"]
-
-# LP_Solve specific flags
+# Start with generic settings
+base_link_args = ["-O3"]
 lp_solve_compiler_args = [
     "-DYY_NEVER_INTERACTIVE",
     "-DLoadInverseLib=0",
@@ -75,9 +72,9 @@ if arch in ("x86_64", "i386", "i686"):
 
 # Platform-specific settings
 if current_platform == "Darwin":
+    base_compiler_args = ["-std=c++14", "-O3", "-DBOOST_NO_AUTO_PTR"]  # downgraded here
     base_compiler_args.extend([
         "-Xpreprocessor", "-fopenmp",
-        "-lomp",  # usually needed during compile too
         "-stdlib=libc++"
     ])
     base_link_args.extend([
@@ -86,18 +83,14 @@ if current_platform == "Darwin":
         "-stdlib=libc++",
         "-ldl", "-lm"
     ])
-
 elif current_platform == "Linux":
+    base_compiler_args = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR"]  # keep C++17
     base_compiler_args.append("-fopenmp")
     base_link_args.extend(["-fopenmp", "-ldl", "-lm"])
 
-# Final compiler/linker flags
+# Final flags
 compiler_args = disable_simd_flags + base_compiler_args + lp_solve_compiler_args
-link_args     = base_link_args
-
-# Ensure that clang++ and g++ options are verbose
-compiler_args.append("-v")  # Add verbose flag to compiler arguments
-link_args.append("-v")      # Add verbose flag to linker arguments
+link_args = base_link_args
 
 # Ext
 volesti_include_dirs = [
