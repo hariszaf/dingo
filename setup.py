@@ -93,7 +93,11 @@ elif current_platform == "Linux":
 
 # Final compiler/linker flags
 compiler_args = disable_simd_flags + base_compiler_args + lp_solve_compiler_args
-link_args = base_link_args
+link_args     = base_link_args
+
+# Ensure that clang++ and g++ options are verbose
+compiler_args.append("-v")  # Add verbose flag to compiler arguments
+link_args.append("-v")      # Add verbose flag to linker arguments
 
 # Ext
 volesti_include_dirs = [
