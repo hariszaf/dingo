@@ -116,8 +116,7 @@ double HPolytopeCPP::apply_sampling(
 
    const char* available_methods =
       "cdhr, rdhr, billiard_walk, ball_walk, dikin_walk, john_walk, vaidya_walk, "
-      "mmcs, gaussian_hmc_walk, exponential_hmc_walk, "
-      "hmc_leapfrog_gaussian, hmc_leapfrog_exponential";
+      "gaussian_hmc_walk, exponential_hmc_walk, hmc_leapfrog_gaussian, hmc_leapfrog_exponential";
 
 
    if (strcmp(method, "cdhr") == 0) { // cdhr

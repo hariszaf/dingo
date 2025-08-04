@@ -15,8 +15,11 @@ from os.path import join
 from Cython.Build import cythonize
 from setuptools import setup, Extension
 
-# Determine the OS
-current_platform = platform.system()
+from setuptools.command.build_ext import build_ext
+
+
+# # Determine the OS
+# current_platform = platform.system()
 
 # Compiler arguments
 # link_args              = ["-O3", "-fopenmp"]
@@ -54,8 +57,7 @@ current_platform = platform.system()
 current_platform = platform.system()
 arch = platform.machine()
 
-# Start with generic settings
-base_link_args = ["-O3", "-fopenmp", "-ldl", "-lm"]
+# Base compiler and linker flags
 lp_solve_compiler_args = [
     "-DYY_NEVER_INTERACTIVE",
     "-DLoadInverseLib=0",
@@ -64,41 +66,38 @@ lp_solve_compiler_args = [
     "-DINVERSE_ACTIVE=3",
     "-DLoadableBlasLib=0"
 ]
-base_compiler_args = ["-std=c++17", "-O3", "-fopenmp"]
 
-# SIMD disabling (only for x86 architectures)
+base_link_args = ["-O3", "-fopenmp", "-ldl", "-lm"]
+cxx_flags      = ["-O3", "-fopenmp"]
+c_flags        = ["-O3", "-fopenmp"]  # No `-std=c++17`
+
 disable_simd_flags = []
 
-# Platform-specific settings
-# std::is_same_v --> c++17
-
 if current_platform == "Darwin":
-    # if arch in ("x86_64", "i386", "i686"):
-    #     disable_simd_flags = ["-mno-sse", "-mno-sse2", "-mno-avx"]
-
-    # Get OpenMP paths from brew
     brew_prefix = os.popen("brew --prefix libomp").read().strip()
     omp_include = os.path.join(brew_prefix, "include")
-    omp_lib = os.path.join(brew_prefix, "lib")
+    omp_lib     = os.path.join(brew_prefix, "lib")
 
-    base_compiler_args.extend([
-        "-Xpreprocessor",
-        "-stdlib=libc++",
-        f"-I{omp_include}"
-    ])
-    base_link_args.extend([
-        "-Xpreprocessor",
-        "-lomp",
-        "-stdlib=libc++",
-        f"-L{omp_lib}"
-    ])
-else:
-    base_compiler_args.append("-DBOOST_NO_AUTO_PTR")
+    cxx_flags.extend(["-Xpreprocessor", "-stdlib=libc++", f"-I{omp_include}"])
+    c_flags.extend(["-Xpreprocessor", f"-I{omp_include}"])
+    base_link_args.extend(["-Xpreprocessor", "-lomp", "-stdlib=libc++", f"-L{omp_lib}"])
 
-# Final flags
-compiler_args = disable_simd_flags + base_compiler_args + lp_solve_compiler_args
-link_args = base_link_args
+elif current_platform == "Linux":
 
+    cxx_flags.extend(["-DBOOST_NO_AUTO_PTR", "-std=c++17"])
+    c_flags.append("-DBOOST_NO_AUTO_PTR")
+
+# Append shared flags
+cxx_flags += disable_simd_flags + lp_solve_compiler_args
+c_flags   += disable_simd_flags + lp_solve_compiler_args
+
+# Define custom build_ext
+class BuildExt(build_ext):
+    def build_extensions(self):
+        for ext in self.extensions:
+            ext.extra_compile_args = cxx_flags if ext.language == "c++" else c_flags
+            ext.extra_link_args = base_link_args
+        super().build_extensions()
 # Ext
 volesti_include_dirs = [
     # include binding files
@@ -162,16 +161,16 @@ suitesparse_dirs = ["/usr/include/suitesparse"]  # Include the SuiteSparse heade
 include_dirs     = volesti_include_dirs + suitesparse_dirs + numpy_dirs
 
 # --- Extension ---
-print("Using compiler args:", compiler_args)
-print("Using linker args:", link_args)
+# print("Using compiler args:", compiler_args)
+# print("Using linker args:", link_args)
 
 volesti_module = Extension(
     name               = "dingo.volestipy",
     language           = "c++",
     sources            = src_files,
     include_dirs       = include_dirs,
-    extra_compile_args = compiler_args,
-    extra_link_args    = link_args,
+    # extra_compile_args = compiler_args,
+    # extra_link_args    = link_args,
 )
 
 ext_modules = cythonize(
@@ -182,7 +181,9 @@ ext_modules = cythonize(
 
 if __name__ == "__main__":
     setup(
-        packages     = ["dingo", "dingo.bindings"],
-        ext_modules  = ext_modules,
-        zip_safe     = False,
+        packages    = ["dingo", "dingo.bindings"],
+        ext_modules = ext_modules,
+        zip_safe    = False,
+        cmdclass    = {"build_ext": BuildExt},
     )
+    print("Setup complete. The dingo library is ready to use.")
