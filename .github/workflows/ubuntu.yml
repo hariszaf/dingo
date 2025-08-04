@@ -141,6 +141,8 @@ jobs:
         run: |
           HOMEBREW_PREFIX=$(brew --prefix)
           find $HOMEBREW_PREFIX/opt/suite-sparse/include/suitesparse -type f
+          echo "-----"
+          find $HOMEBREW_PREFIX/opt/suite-sparse/lib -type f
 
       - name: Install Python build tools
         run: |
@@ -174,15 +176,15 @@ jobs:
 
       - name: Install dependencies and set flags for SuiteSparse
         run: |
-          export CFLAGS="-I/usr/local/opt/suitesparse/include"
-          export LDFLAGS="-L/usr/local/opt/suitesparse/lib"
+          export CFLAGS="-I/usr/local/opt/suite-sparse/include/suitesparse"
+          export LDFLAGS="-L/usr/local/opt/suite-sparse/lib"
+
           pip install sparseqr
 
       - name: Install and test the built wheel
         run: |
           WHEEL_FILE=$(ls downloaded_wheels/*cp310*macosx*_x86_64.whl | head -n 1)
           pip install "$WHEEL_FILE"
-          python -c "import dingo; print(dingo.__version__)"
 
       - name: Run tests
         run: |
