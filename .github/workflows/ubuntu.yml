@@ -153,6 +153,11 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel cython numpy cibuildwheel
 
+      # - name: Set SuiteSparse build flags
+      #   run: |
+      #     echo "CFLAGS=-I$(brew --prefix)/opt/suite-sparse/include/suitesparse" >> $GITHUB_ENV
+      #     echo "LDFLAGS=-L$(brew --prefix)/opt/suite-sparse/lib" >> $GITHUB_ENV
+
       - name: Build wheels for macOS
         env:
           CIBW_BUILD: "cp310-macosx_x86_64"
@@ -210,16 +215,6 @@ jobs:
           python3 tests/scaling.py
           python3 tests/sampling.py
           python3 tests/sampling_no_multiphase.py
-
-
-
-      - name: Set SuiteSparse build flags
-      run: |
-        echo "CFLAGS=-I$(brew --prefix)/opt/suite-sparse/include/suitesparse" >> $GITHUB_ENV
-        echo "LDFLAGS=-L$(brew --prefix)/opt/suite-sparse/lib" >> $GITHUB_ENV
-
-
-
 
   # ------------------------------------------------------------------------------------------
 
