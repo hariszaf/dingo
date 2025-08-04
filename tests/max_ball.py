@@ -18,13 +18,15 @@ from dingo.scaling import gmscale
 
 
 class TestMaxBall(unittest.TestCase):
-    
+
     def test_simple(self):
-        m = 2
+
         n = 5
-        A = np.zeros((2 * n, n), dtype="float")
-        A[0:n] = np.eye(n)
-        A[n:] -= np.eye(n, n, dtype="float")
+
+        A       = np.zeros((2 * n, n), dtype="float")
+        A[0:n]  = np.eye(n)
+        A[n:]  -= np.eye(n, n, dtype="float")
+
         b = np.ones(2 * n, dtype="float")
 
         max_ball = inner_ball(A, b)
