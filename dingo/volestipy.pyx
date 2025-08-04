@@ -15,18 +15,18 @@
 #cython: wraparound=False
 
 # Global dependencies
-import os
-import sys
 import numpy as np
 cimport numpy as np
 from cpython cimport bool
 
-# For the read the json format BIGG files function
-import json
-import scipy.io
-# ----------------------------------------------------------------------------------
-
 from dingo.pyoptinterface_based_impl import inner_ball
+
+
+from libcpp.string cimport string
+
+cdef extern from "<stdexcept>" namespace "std":
+    cdef cppclass runtime_error:
+        const char* what() except +
 
 # Set the time
 def get_time_seed():
@@ -53,9 +53,18 @@ cdef extern from "bindings.h":
       double compute_volume(char* vol_method, char* walk_method, int walk_len, double epsilon, int seed);
 
       # Random sampling
-      double apply_sampling(int walk_len, int number_of_points, int number_of_points_to_burn, \
-                            char* method, double* inner_point, double radius, double* samples, \
-                            double variance_value, double* bias_vector, int ess)
+      double apply_sampling(
+         int walk_len, 
+         int number_of_points, 
+         int number_of_points_to_burn,
+         char* method, 
+         double* inner_point, 
+         double radius, 
+         double* samples,
+         double variance_value, 
+         double* bias_vector, 
+         int ess
+      ) except +
 
       # Initialize the parameters for the (m)ultiphase (m)onte (c)arlo (s)ampling algorithm
       void mmcs_initialize(unsigned int d, int ess, int psrf_check, int parallelism, int num_threads);
@@ -77,15 +86,27 @@ cdef extern from "bindings.h":
 
       # Initialization
       lowDimHPolytopeCPP() except +
-      lowDimHPolytopeCPP(double *A, double *b, double *Aeq, double *beq, int n_rows_of_A, int n_cols_of_A, int n_row_of_Aeq, int n_cols_of_Aeq) except +
+      lowDimHPolytopeCPP(
+         double *A, 
+         double *b, 
+         double *Aeq, 
+         double *beq, 
+         int n_rows_of_A, 
+         int n_cols_of_A, 
+         int n_row_of_Aeq, 
+         int n_cols_of_Aeq
+      ) except +
 
       # Get full dimensional polytope
       int full_dimensiolal_polytope(double* N_extra_trans, double* shift, double* A_full_extra_trans, double* b_full)
 
 # Lists with the methods supported by volesti for volume approximation and random walk
-volume_methods = ["sequence_of_balls".encode("UTF-8"), "cooling_gaussian".encode("UTF-8"), "cooling_balls".encode("UTF-8")]
-walk_methods = ["uniform_ball".encode("UTF-8"), "CDHR".encode("UTF-8"), "RDHR".encode("UTF-8"), "gaussian_ball".encode("UTF-8"), \
-                "gaussian_CDHR".encode("UTF-8"), "gaussian_RDHR".encode("UTF-8"), "uniform_ball".encode("UTF-8"), "billiard".encode("UTF-8")]
+volume_methods   = ["sequence_of_balls".encode("UTF-8"), "cooling_gaussian".encode("UTF-8"), "cooling_balls".encode("UTF-8")]
+walk_methods     = [
+   "uniform_ball".encode("UTF-8"), "CDHR".encode("UTF-8"), "RDHR".encode("UTF-8"),
+   "gaussian_ball".encode("UTF-8"), "gaussian_CDHR".encode("UTF-8"), "gaussian_RDHR".encode("UTF-8"),
+   "billiard".encode("UTF-8")
+]
 rounding_methods = ["min_ellipsoid".encode("UTF-8"), "svd".encode("UTF-8"), "max_ellipsoid".encode("UTF-8")]
 
 # Build the HPolytope class
@@ -106,7 +127,7 @@ cdef class HPolytope:
    def compute_volume(self, walk_len = 2, epsilon = 0.05, vol_method = "sequence_of_balls", walk_method = "uniform_ball", \
       np.npy_int32 seed=get_time_seed()):
 
-      vol_method = vol_method.encode("UTF-8")
+      vol_method  = vol_method.encode("UTF-8")
       walk_method = walk_method.encode("UTF-8")
 
       if vol_method in volume_methods:
@@ -118,8 +139,10 @@ cdef class HPolytope:
          raise Exception('"{}" is not implemented to compute volume. Available methods are: {}'.format(vol_method, volume_methods))
 
    # Likewise, the generate_samples() function
-   def generate_samples(self, method, number_of_points, number_of_points_to_burn, walk_len,
-                        variance_value, bias_vector, solver = None, ess = 1000):
+   def generate_samples(
+      self, method, number_of_points, number_of_points_to_burn, walk_len,
+      variance_value, bias_vector, solver = None, ess = 1000
+   ):
 
       n_variables = self._A.shape[1]
       cdef double[:,::1] samples = np.zeros((number_of_points, n_variables), dtype = np.float64, order = "C")
@@ -131,9 +154,23 @@ cdef class HPolytope:
 
       cdef double[::1] bias_vector_ = np.asarray(bias_vector)
 
-      self.polytope_cpp.apply_sampling(walk_len, number_of_points, number_of_points_to_burn, \
-                                       method, &inner_point_for_c[0], radius, &samples[0,0], \
-                                       variance_value, &bias_vector_[0], ess)
+      try:
+         self.polytope_cpp.apply_sampling(
+            walk_len, 
+            number_of_points, 
+            number_of_points_to_burn, 
+            method, 
+            &inner_point_for_c[0], 
+            radius, 
+            &samples[0,0],
+            variance_value, 
+            &bias_vector_[0], 
+            ess
+         )
+
+      except Exception as e:
+         raise RuntimeError(f"RuntimeError in apply_sampling: {e}")
+
       return np.asarray(samples)
 
 

@@ -7,9 +7,9 @@
 # Licensed under GNU LGPL.3, see LICENCE file
 
 
-import numpy as np
-import warnings
 import math
+import numpy as np
+
 from dingo.MetabolicNetwork import MetabolicNetwork
 from dingo.utils import (
     map_samples_to_steady_states,
@@ -29,12 +29,6 @@ class PolytopeSampler:
             raise Exception("An unknown input object given for initialization.")
 
         self._metabolic_network = metabol_net
-        # self._A       = []
-        # self._b       = []
-        # self._N       = []
-        # self._N_shift = []
-        # self._T       = []
-        # self._T_shift = []
 
         self._A       = np.empty((0, 0))  # Empty 2D array
         self._b       = np.empty((0,))    # Empty 1D array
@@ -58,12 +52,6 @@ class PolytopeSampler:
         """
 
         if (
-            # self._A          == []
-            # or self._b       == []
-            # or self._N       == []
-            # or self._N_shift == []
-            # or self._T       == []
-            # or self._T_shift == []
             self._A.size          == 0
             or self._b.size       == 0
             or self._N.size       == 0
@@ -177,7 +165,9 @@ class PolytopeSampler:
         """A member function to sample steady states.
 
         Keyword arguments:
-        method -- An MCMC method to sample, i.e. {'billiard_walk', 'cdhr', 'rdhr', 'ball_walk', 'dikin_walk', 'john_walk', 'vaidya_walk', 'gaussian_hmc_walk', 'exponential_hmc_walk', 'hmc_leapfrog_gaussian', 'hmc_leapfrog_exponential'}
+        method -- An MCMC method to sample, i.e. {'billiard_walk', 'cdhr', 'rdhr', 'ball_walk',
+                'dikin_walk', 'john_walk', 'vaidya_walk', 'gaussian_hmc_walk', 'exponential_hmc_walk',
+                'hmc_leapfrog_gaussian', 'hmc_leapfrog_exponential'}
         n -- the number of steady states to sample
         burn_in -- the number of points to burn before sampling
         thinning -- the walk length of the chain

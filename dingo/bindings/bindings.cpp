@@ -83,16 +83,18 @@ double HPolytopeCPP::compute_volume(char* vol_method, char* walk_method,
 
 
 //////////         Start of "generate_samples()"          //////////
-double HPolytopeCPP::apply_sampling(int walk_len,
-                                    int number_of_points,
-                                    int number_of_points_to_burn,
-                                    char* method,
-                                    double* inner_point,
-                                    double radius,
-                                    double* samples,
-                                    double variance_value,
-                                    double* bias_vector_,
-                                    int ess){
+double HPolytopeCPP::apply_sampling(
+   int walk_len,
+   int number_of_points,
+   int number_of_points_to_burn,
+   char* method,
+   double* inner_point,
+   double radius,
+   double* samples,
+   double variance_value,
+   double* bias_vector_,
+   int ess
+   ){
 
    RNGType rng(HP.dimension());
    HP.normalize();
@@ -112,72 +114,109 @@ double HPolytopeCPP::apply_sampling(int walk_len,
 
    NT variance = variance_value;
 
-   if (strcmp(method, "cdhr")) { // cdhr
-      uniform_sampling<CDHRWalk>(rand_points, HP, rng, walk_len, number_of_points,
-                                 starting_point, number_of_points_to_burn);
-   } else if (strcmp(method, "rdhr")) { // rdhr
-      uniform_sampling<RDHRWalk>(rand_points, HP, rng, walk_len, number_of_points,
-                                 starting_point, number_of_points_to_burn);
-   } else if (strcmp(method, "billiard_walk")) { // accelerated_billiard
-      uniform_sampling<AcceleratedBilliardWalk>(rand_points, HP, rng, walk_len,
-                                                number_of_points, starting_point,
-                                                number_of_points_to_burn);
-   } else if (strcmp(method, "ball_walk")) { // ball walk
-      uniform_sampling<BallWalk>(rand_points, HP, rng, walk_len, number_of_points,
-                                 starting_point, number_of_points_to_burn);
-   } else if (strcmp(method, "dikin_walk")) { // dikin walk
-      uniform_sampling<DikinWalk>(rand_points, HP, rng, walk_len, number_of_points,
-                                  starting_point, number_of_points_to_burn);
-   } else if (strcmp(method, "john_walk")) { // john walk
-      uniform_sampling<JohnWalk>(rand_points, HP, rng, walk_len, number_of_points,
-                                 starting_point, number_of_points_to_burn);
-   } else if (strcmp(method, "vaidya_walk")) { // vaidya walk
-      uniform_sampling<VaidyaWalk>(rand_points, HP, rng, walk_len, number_of_points,
-                                   starting_point, number_of_points_to_burn);
-   } else if (strcmp(method, "mmcs")) { // vaidya walk
+   const char* available_methods =
+      "cdhr, rdhr, billiard_walk, ball_walk, dikin_walk, john_walk, vaidya_walk, "
+      "mmcs, gaussian_hmc_walk, exponential_hmc_walk, "
+      "hmc_leapfrog_gaussian, hmc_leapfrog_exponential";
+
+
+   if (strcmp(method, "cdhr") == 0) { // cdhr
+      uniform_sampling<CDHRWalk>(
+         rand_points, HP, rng, walk_len, number_of_points,
+         starting_point, number_of_points_to_burn
+      );
+
+   } else if (strcmp(method, "rdhr") == 0) { // rdhr
+      uniform_sampling<RDHRWalk>(
+         rand_points, HP, rng, walk_len, number_of_points,
+         starting_point, number_of_points_to_burn
+      );
+
+   } else if (strcmp(method, "billiard_walk") == 0) { // accelerated_billiard
+      uniform_sampling<AcceleratedBilliardWalk>(
+         rand_points, HP, rng, walk_len, number_of_points, 
+         starting_point, number_of_points_to_burn
+      );
+
+   } else if (strcmp(method, "ball_walk") == 0) { // ball walk
+      uniform_sampling<BallWalk>(
+         rand_points, HP, rng, walk_len, number_of_points,
+         starting_point, number_of_points_to_burn
+      );
+
+   } else if (strcmp(method, "dikin_walk") == 0) { // dikin walk
+      uniform_sampling<DikinWalk>(
+         rand_points, HP, rng, walk_len, number_of_points,
+         starting_point, number_of_points_to_burn
+      );
+
+   } else if (strcmp(method, "john_walk") == 0) { // john walk
+      uniform_sampling<JohnWalk>(
+         rand_points, HP, rng, walk_len, number_of_points,
+         starting_point, number_of_points_to_burn
+      );
+
+   } else if (strcmp(method, "vaidya_walk") == 0) { // vaidya walk
+      uniform_sampling<VaidyaWalk>(
+         rand_points, HP, rng, walk_len, number_of_points,
+         starting_point, number_of_points_to_burn
+      );
+
+   } else if (strcmp(method, "mmcs") == 0) { // vaidya walk
       MT S;
       int total_ess;
       //TODO: avoid passing polytopes as non-const references
       const Hpolytope HP_const = HP;
       mmcs(HP_const, ess, S, total_ess, walk_len, rng);
       samples = S.data();
-   } else if (strcmp(method, "gaussian_hmc_walk")) { // Gaussian sampling with exact HMC walk
+
+   } else if (strcmp(method, "gaussian_hmc_walk") == 0) { // Gaussian sampling with exact HMC walk
       NT a = NT(1)/(NT(2)*variance);
-      gaussian_sampling<GaussianHamiltonianMonteCarloExactWalk>(rand_points, HP, rng, walk_len, number_of_points, a,
-                                   starting_point, number_of_points_to_burn);
-   } else if (strcmp(method, "exponential_hmc_walk")) { // exponential sampling with exact HMC walk
+      gaussian_sampling<GaussianHamiltonianMonteCarloExactWalk>(
+         rand_points, HP, rng, walk_len, number_of_points, a,
+         starting_point, number_of_points_to_burn
+      );
+   } else if (strcmp(method, "exponential_hmc_walk") == 0) { // exponential sampling with exact HMC walk
       VT c(d);
       for (int i = 0; i < d; i++){
          c(i) = bias_vector_[i];
       }
       Point bias_vector(c);
-      exponential_sampling<ExponentialHamiltonianMonteCarloExactWalk>(rand_points, HP, rng, walk_len, number_of_points, bias_vector, variance,
-                                   starting_point, number_of_points_to_burn);
-   } else if (strcmp(method, "hmc_leapfrog_gaussian")) { // HMC with Gaussian distribution
-      rand_points = hmc_leapfrog_gaussian(walk_len, number_of_points, number_of_points_to_burn, variance, starting_point, HP);
-   } else if (strcmp(method, "hmc_leapfrog_exponential")) { // HMC with exponential distribution
+      exponential_sampling<ExponentialHamiltonianMonteCarloExactWalk>(
+         rand_points, HP, rng, walk_len, number_of_points, bias_vector, variance,
+         starting_point, number_of_points_to_burn
+      );
+
+   } else if (strcmp(method, "hmc_leapfrog_gaussian") == 0) { // HMC with Gaussian distribution
+      rand_points = hmc_leapfrog_gaussian(
+         walk_len, number_of_points, number_of_points_to_burn, variance, starting_point, HP
+      );
+
+   } else if (strcmp(method, "hmc_leapfrog_exponential") == 0) { // HMC with exponential distribution
       VT c(d);
       for (int i = 0; i < d; i++) {
          c(i) = bias_vector_[i];
       }
       Point bias_vector(c);
-
-      rand_points = hmc_leapfrog_exponential(walk_len, number_of_points, number_of_points_to_burn, variance, bias_vector, starting_point, HP);
+      rand_points = hmc_leapfrog_exponential(
+         walk_len, number_of_points, number_of_points_to_burn, variance, bias_vector, starting_point, HP
+      );
 
    }
-
    else {
-      throw std::runtime_error("This function must not be called.");
+      throw std::runtime_error(
+         std::string("Please select an available method. Available methods are: ") + available_methods
+      );
    }
 
-   if (!strcmp(method, "mmcs")) {
-    // The following block of code allows us to copy the sampled points
-    auto n_si=0;
-    for (auto it_s = rand_points.cbegin(); it_s != rand_points.cend(); it_s++){
-        for (auto i = 0; i != it_s->dimension(); i++){
-            samples[n_si++] = (*it_s)[i];
-        }
-    }
+   // If not MMCS, copy rand_points to samples
+   if (strcmp(method, "mmcs") != 0) {
+      int n_si = 0;
+      for (const auto& point : rand_points) {
+         for (int i = 0; i < point.dimension(); ++i) {
+               samples[n_si++] = point[i];
+         }
+      }
    }
    return 0.0;
 }
@@ -254,23 +293,27 @@ double HPolytopeCPP::mmcs_step(double* inner_point, double radius, int &N) {
    MT TotalRandPoints;
    if (mmcs_set_of_parameters.parallelism)
    {
-      mmcs_set_of_parameters.complete = perform_parallel_mmcs_step<AcceleratedBilliardWalkParallel>(HP, rng, mmcs_set_of_parameters.walk_length,
-                                                                                                    mmcs_set_of_parameters.Neff,
-                                                                                                    mmcs_set_of_parameters.max_num_samples,
-                                                                                                    mmcs_set_of_parameters.window,
-                                                                                                    Neff_sampled, mmcs_set_of_parameters.total_samples,
-                                                                                                    mmcs_set_of_parameters.num_rounding_steps,
-                                                                                                    TotalRandPoints, CheBall.first, mmcs_set_of_parameters.nburns,
-                                                                                                    mmcs_set_of_parameters.num_threads,
-                                                                                                    mmcs_set_of_parameters.req_round_temp, L);
-   }
+      mmcs_set_of_parameters.complete = perform_parallel_mmcs_step<AcceleratedBilliardWalkParallel>(
+         HP, rng, mmcs_set_of_parameters.walk_length,
+         mmcs_set_of_parameters.Neff,
+         mmcs_set_of_parameters.max_num_samples,
+         mmcs_set_of_parameters.window,
+         Neff_sampled, mmcs_set_of_parameters.total_samples,
+         mmcs_set_of_parameters.num_rounding_steps,
+         TotalRandPoints, CheBall.first, mmcs_set_of_parameters.nburns,
+         mmcs_set_of_parameters.num_threads,
+         mmcs_set_of_parameters.req_round_temp, L
+      );
+}
    else
    {
-      mmcs_set_of_parameters.complete = perform_mmcs_step(HP, rng, mmcs_set_of_parameters.walk_length, mmcs_set_of_parameters.Neff,
-                                                          mmcs_set_of_parameters.max_num_samples, mmcs_set_of_parameters.window,
-                                                          Neff_sampled, mmcs_set_of_parameters.total_samples,
-                                                          mmcs_set_of_parameters.num_rounding_steps, TotalRandPoints, CheBall.first,
-                                                          mmcs_set_of_parameters.nburns, mmcs_set_of_parameters.req_round_temp, WalkType);
+      mmcs_set_of_parameters.complete = perform_mmcs_step(
+         HP, rng, mmcs_set_of_parameters.walk_length, mmcs_set_of_parameters.Neff,
+         mmcs_set_of_parameters.max_num_samples, mmcs_set_of_parameters.window,
+         Neff_sampled, mmcs_set_of_parameters.total_samples,
+         mmcs_set_of_parameters.num_rounding_steps, TotalRandPoints, CheBall.first,
+         mmcs_set_of_parameters.nburns, mmcs_set_of_parameters.req_round_temp, WalkType
+      );
    }
 
    mmcs_set_of_parameters.store_ess(mmcs_set_of_parameters.phase) = Neff_sampled;
