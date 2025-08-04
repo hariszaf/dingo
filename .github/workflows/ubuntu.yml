@@ -53,7 +53,6 @@ jobs:
           pip install cibuildwheel
 
       - name: Build wheels for Linux
-        # run: CIBW_SKIP="pp*" CIBW_BUILD="cp310*" CIBW_PYTHON_VERSION="3.10" cibuildwheel --output-dir dist
         env:
           CIBW_BUILD: "cp310-manylinux_x86_64" # Remove -manylinux_x86_64 once everything works fine to build all distributions
           CIBW_SKIP: "pp*"
@@ -138,12 +137,6 @@ jobs:
           which clang++
           clang++ --version
 
-      # - name: Set compiler environment
-      #   run: |
-      #     echo "CC=$(brew --prefix)/opt/llvm/bin/clang" >> $GITHUB_ENV
-      #     echo "CXX=$(brew --prefix)/opt/llvm/bin/clang++" >> $GITHUB_ENV
-      #     echo "PATH=$(brew --prefix)/opt/llvm/bin:$PATH" >> $GITHUB_ENV
-
       - name: List files in suite-sparse
         run: |
           HOMEBREW_PREFIX=$(brew --prefix)
@@ -153,32 +146,12 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel cython numpy cibuildwheel
 
-      # - name: Set SuiteSparse build flags
-      #   run: |
-      #     echo "CFLAGS=-I$(brew --prefix)/opt/suite-sparse/include/suitesparse" >> $GITHUB_ENV
-      #     echo "LDFLAGS=-L$(brew --prefix)/opt/suite-sparse/lib" >> $GITHUB_ENV
-
       - name: Build wheels for macOS
         env:
           CIBW_BUILD: "cp310-macosx_x86_64"
           CIBW_ARCHS_MACOS: "x86_64"
           MACOSX_DEPLOYMENT_TARGET: "13.0"
-        # run: |
-        #   HOMEBREW_PREFIX=$(brew --prefix)
-        #   CC=$HOMEBREW_PREFIX/opt/llvm/bin/clang
-        #   CXX=$HOMEBREW_PREFIX/opt/llvm/bin/clang++
-        #   echo "PATH=$(brew --prefix)/opt/llvm/bin:$PATH" >> $GITHUB_ENV
 
-        #   # CFLAGS should not have C++ flags
-        #   CFLAGS="-O3 -arch x86_64 -I$HOMEBREW_PREFIX/opt/suite-sparse/include/suitesparse"
-
-        #   # CXXFLAGS should include C++ flags
-        #   CXXFLAGS="-O3 -std=c++17 -arch x86_64 -stdlib=libc++ -Wno-deprecated-declarations"
-        #   LDFLAGS="-stdlib=libc++ -L$HOMEBREW_PREFIX/opt/llvm/lib -L$HOMEBREW_PREFIX/opt/suite-sparse/lib -lomp"
-
-        #   export CC CXX CFLAGS CXXFLAGS LDFLAGS
-
-        #   cibuildwheel --platform macos --output-dir dist
         run: |
           HOMEBREW_PREFIX=$(brew --prefix)
           echo "PATH=$HOMEBREW_PREFIX/opt/llvm/bin:$PATH" >> $GITHUB_ENV
@@ -197,15 +170,25 @@ jobs:
 
           cibuildwheel --platform macos --output-dir dist
 
-      - uses: actions/upload-artifact@v4
+      # The macos wheel seems that is being built correctly!
+
+      - name: Upload macOS wheels
+        uses: actions/upload-artifact@v4
         with:
           name: wheels-macos
           path: dist/
 
-      - name: Install and test built wheel
+      - name: Download macOS wheels
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-macos
+          path: downloaded_wheels
+
+      - name: Install and test the built wheel
         run: |
-          WHEEL_FILE=$(ls dist/*cp310*macosx*_x86_64.whl | head -n 1)
+          WHEEL_FILE=$(ls downloaded_wheels/*cp310*macosx*_x86_64.whl | head -n 1)
           pip install "$WHEEL_FILE"
+          python -c "import dingo; print(dingo.__version__)"
 
       - name: Run tests
         run: |
