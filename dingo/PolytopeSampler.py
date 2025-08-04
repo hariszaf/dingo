@@ -163,7 +163,7 @@ class PolytopeSampler:
     def generate_steady_states_no_multiphase(
         self, method = 'billiard_walk', n=1000, burn_in=0, thinning=1, variance=1.0, bias_vector=None, ess=1000
     ):
-        """A member function to sample steady states.
+        """A member function to sample steady states, using other than the Multiphase approach MCMC methods.
 
         Keyword arguments:
         method -- An MCMC method to sample, i.e. {'billiard_walk', 'cdhr', 'rdhr', 'ball_walk',
@@ -173,6 +173,9 @@ class PolytopeSampler:
         burn_in -- the number of points to burn before sampling
         thinning -- the walk length of the chain
         """
+
+        if method == "mmcs":
+            raise Exception("MMCS is not supported in this method. Use generate_steady_states() instead.")
 
         self.get_polytope()
 
