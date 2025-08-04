@@ -8,20 +8,24 @@
 
 # Licensed under GNU LGPL.3, see LICENCE file
 
-import unittest
-import os
 import sys
+import unittest
+from pathlib import Path
+
 from dingo import MetabolicNetwork, PolytopeSampler
 from dingo.pyoptinterface_based_impl import set_default_solver
+
+root_dir = Path(__file__).parent.parent
+ext_data = root_dir / "ext_data"
 
 
 class TestSampling(unittest.TestCase):
 
     def test_sample_json(self):
 
-        input_file_json = os.getcwd() + "/ext_data/e_coli_core.json"
+        input_file_json = ext_data / "e_coli_core.json"
 
-        model   = MetabolicNetwork.from_json(input_file_json)
+        model   = MetabolicNetwork.from_json(input_file_json.as_posix())
         sampler = PolytopeSampler(model)
 
         steady_states = sampler.generate_steady_states(ess = 20000, psrf = True)
@@ -31,9 +35,9 @@ class TestSampling(unittest.TestCase):
 
     def test_sample_mat(self):
 
-        input_file_mat = os.getcwd() + "/ext_data/e_coli_core.mat"
+        input_file_mat = ext_data / "e_coli_core.mat"
 
-        model   = MetabolicNetwork.from_mat(input_file_mat)
+        model   = MetabolicNetwork.from_mat(input_file_mat.as_posix())
         sampler = PolytopeSampler(model)
 
         steady_states = sampler.generate_steady_states(ess = 20000, psrf = True)
@@ -43,9 +47,9 @@ class TestSampling(unittest.TestCase):
 
     def test_sample_sbml(self):
 
-        input_file_sbml = os.getcwd() + "/ext_data/e_coli_core.xml"
+        input_file_sbml = ext_data / "e_coli_core.xml"
 
-        model   = MetabolicNetwork.from_sbml(input_file_sbml)
+        model   = MetabolicNetwork.from_sbml(input_file_sbml.as_posix())
         sampler = PolytopeSampler(model)
 
         steady_states = sampler.generate_steady_states(ess = 20000, psrf = True)
