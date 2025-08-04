@@ -10,83 +10,11 @@ name: dingo-ubuntu
 on: [push, pull_request]
 
 jobs:
-  # # Linux
-  # build-linux:
-  #   name: Build Linux-based distributions
+  # Linux
+  build-linux:
+    name: Build Linux-based distributions
 
-  #   runs-on: ubuntu-latest
-  #   permissions:
-  #     id-token: write
-
-  #   strategy:
-  #     matrix:
-  #       python-version: ["3.10"]
-
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Set up Python ${{ matrix.python-version }}
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
-
-  #     - name: Load submodules
-  #       run: |
-  #         git submodule update --init;
-
-  #     - name: Download and unzip the boost library
-  #       run: |
-  #         curl -O https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2;
-  #         tar -xjf boost_1_76_0.tar.bz2;
-  #         rm boost_1_76_0.tar.bz2;
-
-  #     - name: Download and unzip the lp-solve library
-  #       run: |
-  #         wget https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_source.tar.gz
-  #         tar xzvf lp_solve_5.5.2.11_source.tar.gz
-  #         rm lp_solve_5.5.2.11_source.tar.gz
-
-  #     - name: Install dependencies
-  #       run: |
-  #         sudo apt-get install libsuitesparse-dev;
-  #         pip install --upgrade setuptools wheel cython numpy
-  #         pip install cibuildwheel
-
-  #     - name: Build wheels for Linux
-  #       # run: CIBW_SKIP="pp*" CIBW_BUILD="cp310*" CIBW_PYTHON_VERSION="3.10" cibuildwheel --output-dir dist
-  #       env:
-  #         CIBW_BUILD: "cp310-manylinux_x86_64" # Remove -manylinux_x86_64 once everything works fine to build all distributions
-  #         CIBW_SKIP: "pp*"
-  #         CIBW_ARCHS_LINUX: "x86_64"
-  #         CIBW_PYTHON_VERSION: "3.10"
-  #       run: |
-  #         cibuildwheel --output-dir dist
-
-  #     - uses: actions/upload-artifact@v4
-  #       with:
-  #         name: wheels
-  #         path: dist/
-
-  #     - name: Install built wheel on the gh VM to run tests (only cp310)
-  #       run: |
-  #         echo "All wheels in dist/"
-  #         ls dist/
-  #         WHEEL_FILE=$(ls dist/*cp310*manylinux*_x86_64.whl | head -n 1)
-  #         pip install "$WHEEL_FILE"
-
-  #     - name: Run tests
-  #       run: |
-  #         python3 tests/fba.py;
-  #         python3 tests/full_dimensional.py;
-  #         python3 tests/max_ball.py;
-  #         python3 tests/scaling.py;
-  #         python3 tests/sampling.py;
-  #         python3 tests/sampling_no_multiphase.py;
-
-  # ------------------------------------------------------------------------------------------
-  # MacOS
-  build-macos:
-    name: Build macOS distributions
-    runs-on: macos-13
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
 
@@ -96,7 +24,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -104,65 +31,140 @@ jobs:
 
       - name: Load submodules
         run: |
-          git submodule update --init
+          git submodule update --init;
 
-      - name: Download Boost
+      - name: Download and unzip the boost library
         run: |
-          curl -O https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2
-          tar -xjf boost_1_76_0.tar.bz2
-          rm boost_1_76_0.tar.bz2
+          curl -O https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2;
+          tar -xjf boost_1_76_0.tar.bz2;
+          rm boost_1_76_0.tar.bz2;
 
-      - name: Download lp_solve
+      - name: Download and unzip the lp-solve library
         run: |
-          curl -L -o lp_solve_5.5.2.11_source.tar.gz https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_source.tar.gz/download
+          wget https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_source.tar.gz
           tar xzvf lp_solve_5.5.2.11_source.tar.gz
           rm lp_solve_5.5.2.11_source.tar.gz
 
-      - name: Install Homebrew deps
+      - name: Install dependencies
         run: |
-          brew install --formula suite-sparse llvm libomp
-          echo "HOMEBREW_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
+          sudo apt-get update -y
+          sudo apt-get install libsuitesparse-dev;
+          pip install --upgrade setuptools wheel cython numpy
+          pip install cibuildwheel
 
-      - name: Set compiler environment
-        run: |
-          echo "CC=$(brew --prefix)/opt/llvm/bin/clang" >> $GITHUB_ENV
-          echo "CXX=$(brew --prefix)/opt/llvm/bin/clang++" >> $GITHUB_ENV
-          echo "PATH=$(brew --prefix)/opt/llvm/bin:$PATH" >> $GITHUB_ENV
-
-      - name: Install Python build tools
-        run: |
-          pip install --upgrade pip setuptools wheel cython numpy cibuildwheel
-
-      - name: Build wheels for macOS
+      - name: Build wheels for Linux
+        # run: CIBW_SKIP="pp*" CIBW_BUILD="cp310*" CIBW_PYTHON_VERSION="3.10" cibuildwheel --output-dir dist
         env:
-          CIBW_BUILD: "cp310-macosx_x86_64"
-          CIBW_ARCHS_MACOS: "x86_64"
-          CIBW_ENVIRONMENT: >
-            CC=$(brew --prefix)/opt/llvm/bin/clang
-            CXX=$(brew --prefix)/opt/llvm/bin/clang++
-            CFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -I$(brew --prefix)/opt/suite-sparse/include/suitesparse'
-            CXXFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -stdlib=libc++'
-            LDFLAGS='-stdlib=libc++ -L$(brew --prefix)/opt/llvm/lib -L$(brew --prefix)/opt/suite-sparse/lib -lomp'
-        run: cibuildwheel --output-dir dist
+          CIBW_BUILD: "cp310-manylinux_x86_64" # Remove -manylinux_x86_64 once everything works fine to build all distributions
+          CIBW_SKIP: "pp*"
+          CIBW_ARCHS_LINUX: "x86_64"
+          CIBW_PYTHON_VERSION: "3.10"
+        run: |
+          cibuildwheel --output-dir dist
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheels-macos
+          name: wheels
           path: dist/
 
-      - name: Install and test built wheel
+      - name: Install built wheel on the gh VM to run tests (only cp310)
         run: |
-          WHEEL_FILE=$(ls dist/*cp310*macosx*_x86_64.whl | head -n 1)
+          echo "All wheels in dist/"
+          ls dist/
+          WHEEL_FILE=$(ls dist/*cp310*manylinux*_x86_64.whl | head -n 1)
           pip install "$WHEEL_FILE"
 
       - name: Run tests
         run: |
-          python3 tests/fba.py
-          python3 tests/full_dimensional.py
-          python3 tests/max_ball.py
-          python3 tests/scaling.py
-          python3 tests/sampling.py
-          python3 tests/sampling_no_multiphase.py
+          python3 tests/fba.py;
+          python3 tests/full_dimensional.py;
+          python3 tests/max_ball.py;
+          python3 tests/scaling.py;
+          python3 tests/sampling.py;
+          python3 tests/sampling_no_multiphase.py;
+
+  # ------------------------------------------------------------------------------------------
+
+  # # MacOS
+  # build-macos:
+  #   name: Build macOS distributions
+  #   runs-on: macos-13
+  #   permissions:
+  #     id-token: write
+
+  #   strategy:
+  #     matrix:
+  #       python-version: ["3.10"]
+
+  #   steps:
+  #     - uses: actions/checkout@v2
+
+  #     - name: Set up Python ${{ matrix.python-version }}
+  #       uses: actions/setup-python@v2
+  #       with:
+  #         python-version: ${{ matrix.python-version }}
+
+  #     - name: Load submodules
+  #       run: |
+  #         git submodule update --init
+
+  #     - name: Download Boost
+  #       run: |
+  #         curl -O https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2
+  #         tar -xjf boost_1_76_0.tar.bz2
+  #         rm boost_1_76_0.tar.bz2
+
+  #     - name: Download lp_solve
+  #       run: |
+  #         curl -L -o lp_solve_5.5.2.11_source.tar.gz https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_source.tar.gz/download
+  #         tar xzvf lp_solve_5.5.2.11_source.tar.gz
+  #         rm lp_solve_5.5.2.11_source.tar.gz
+
+  #     - name: Install Homebrew deps
+  #       run: |
+  #         brew install --formula suite-sparse llvm libomp
+  #         echo "HOMEBREW_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
+
+  #     - name: Set compiler environment
+  #       run: |
+  #         echo "CC=$(brew --prefix)/opt/llvm/bin/clang" >> $GITHUB_ENV
+  #         echo "CXX=$(brew --prefix)/opt/llvm/bin/clang++" >> $GITHUB_ENV
+  #         echo "PATH=$(brew --prefix)/opt/llvm/bin:$PATH" >> $GITHUB_ENV
+
+  #     - name: Install Python build tools
+  #       run: |
+  #         pip install --upgrade pip setuptools wheel cython numpy cibuildwheel
+
+  #     - name: Build wheels for macOS
+  #       env:
+  #         CIBW_BUILD: "cp310-macosx_x86_64"
+  #         CIBW_ARCHS_MACOS: "x86_64"
+  #         CIBW_ENVIRONMENT: >
+  #           CC=$(brew --prefix)/opt/llvm/bin/clang
+  #           CXX=$(brew --prefix)/opt/llvm/bin/clang++
+  #           CFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -I$(brew --prefix)/opt/suite-sparse/include/suitesparse'
+  #           CXXFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -stdlib=libc++'
+  #           LDFLAGS='-stdlib=libc++ -L$(brew --prefix)/opt/llvm/lib -L$(brew --prefix)/opt/suite-sparse/lib -lomp'
+  #       run: cibuildwheel --platform macos --output-dir dist
+
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         name: wheels-macos
+  #         path: dist/
+
+  #     - name: Install and test built wheel
+  #       run: |
+  #         WHEEL_FILE=$(ls dist/*cp310*macosx*_x86_64.whl | head -n 1)
+  #         pip install "$WHEEL_FILE"
+
+  #     - name: Run tests
+  #       run: |
+  #         python3 tests/fba.py
+  #         python3 tests/full_dimensional.py
+  #         python3 tests/max_ball.py
+  #         python3 tests/scaling.py
+  #         python3 tests/sampling.py
+  #         python3 tests/sampling_no_multiphase.py
 
   # ------------------------------------------------------------------------------------------
 

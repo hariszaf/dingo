@@ -43,7 +43,11 @@
 typedef double NT;
 typedef Cartesian<NT>    Kernel;
 typedef typename Kernel::Point    Point;
-typedef HPolytope<Point> Hpolytope;
+
+// typedef HPolytope<Point> Hpolytope;
+typedef Eigen::Matrix<NT, Eigen::Dynamic, Eigen::Dynamic> DenseMT;
+typedef HPolytope<Point, DenseMT> Hpolytope;
+
 typedef typename Hpolytope::MT    MT;
 typedef typename Hpolytope::VT    VT;
 typedef BoostRandomNumberGenerator<boost::mt19937, double>    RNGType;
