@@ -204,6 +204,28 @@ jobs:
 
   # Publish
   publish-testpypi:
+    # name: Upload to TestPyPI
+    # needs: [build-linux, build-macos]
+    # runs-on: ubuntu-latest
+    # environment:
+    #   name: testpypi
+
+    # steps:
+    #   - uses: actions/download-artifact@v4
+    #     with:
+    #       name: wheels
+    #       path: dist/
+
+    #   - name: Install Twine
+    #     run: python -m pip install twine
+
+    #   - name: Publish package to TestPyPI
+    #     uses: pypa/gh-action-pypi-publish@release/v1
+    #     with:
+    #       password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+    #       repository-url: https://test.pypi.org/legacy/
+    #       packages-dir: dist/
+
     name: Upload to TestPyPI
     needs: [build-linux, build-macos]
     runs-on: ubuntu-latest
@@ -216,11 +238,17 @@ jobs:
           name: wheels
           path: dist/
 
+      - name: List contents of dist/
+        run: ls -la dist/
+
       - name: Install Twine
         run: python -m pip install twine
 
+      - name: Verify Twine installation
+        run: twine --version
+
       - name: Publish package to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@v1
         with:
           password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           repository-url: https://test.pypi.org/legacy/
