@@ -55,7 +55,7 @@ current_platform = platform.system()
 arch = platform.machine()
 
 # Start with generic settings
-base_link_args = ["-O3"]
+base_link_args = ["-O3", "-fopenmp", "-ldl", "-lm"]
 lp_solve_compiler_args = [
     "-DYY_NEVER_INTERACTIVE",
     "-DLoadInverseLib=0",
@@ -64,7 +64,7 @@ lp_solve_compiler_args = [
     "-DINVERSE_ACTIVE=3",
     "-DLoadableBlasLib=0"
 ]
-base_compiler_args = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR"]
+base_compiler_args = ["-std=c++17", "-O3", "-fopenmp", "-DBOOST_NO_AUTO_PTR"]
 
 # SIMD disabling (only for x86 architectures)
 disable_simd_flags = []
@@ -82,17 +82,17 @@ if current_platform == "Darwin":
     omp_lib = os.path.join(brew_prefix, "lib")
 
     base_compiler_args.extend([
-        "-Xpreprocessor", "-fopenmp",
+        "-Xpreprocessor",
         "-stdlib=libc++",
         f"-I{omp_include}"
     ])
     base_link_args.extend([
-        "-Xpreprocessor", "-fopenmp",
+        "-Xpreprocessor",
         "-lomp",
         "-stdlib=libc++",
-        "-ldl", "-lm",
         f"-L{omp_lib}"
     ])
+
 
 # Final flags
 compiler_args = disable_simd_flags + base_compiler_args + lp_solve_compiler_args

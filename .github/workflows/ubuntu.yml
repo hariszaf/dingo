@@ -33,6 +33,14 @@ jobs:
         run: |
           git submodule update --init;
 
+      - name: Modify Template Usage on volesti header files
+        run: |
+          # Modify the template function calls in the specified files
+          sed -i '' 's/walk.template parameters_burnin(/walk.template parameters_burnin<>(/' volesti/include/sampling/mmcs.hpp
+          sed -i '' 's/walk.template get_starting_point(/walk.template get_starting_point<>(/' volesti/include/sampling/mmcs.hpp
+          sed -i '' 's/walk.template parameters_burnin(/walk.template parameters_burnin<>(/' volesti/include/sampling/parallel_mmcs.hpp
+          sed -i '' 's/walk.template get_starting_point(/walk.template get_starting_point<>(/' volesti/include/sampling/parallel_mmcs.hpp
+
       - name: Download and unzip the boost library
         run: |
           curl -O https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2;
@@ -148,7 +156,7 @@ jobs:
             CC=$(brew --prefix)/opt/llvm/bin/clang
             CXX=$(brew --prefix)/opt/llvm/bin/clang++
             CFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -I$(brew --prefix)/opt/suite-sparse/include/suitesparse'
-            CXXFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -stdlib=libc++'
+            CXXFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -stdlib=libc++ -Wno-deprecated-declarations'
             LDFLAGS='-stdlib=libc++ -L$(brew --prefix)/opt/llvm/lib -L$(brew --prefix)/opt/suite-sparse/lib -lomp'
         run: cibuildwheel --platform macos --output-dir dist
 
