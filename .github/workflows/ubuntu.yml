@@ -85,116 +85,109 @@ jobs:
 
   # ------------------------------------------------------------------------------------------
 
-  # # MacOS
-  # build-macos:
-  #   name: Build macOS distributions
-  #   runs-on: macos-13
-  #   permissions:
-  #     id-token: write
+  # MacOS
+  build-macos:
+    name: Build macOS distributions
+    runs-on: macos-13
+    permissions:
+      id-token: write
 
-  #   strategy:
-  #     matrix:
-  #       python-version: ["3.10"]
+    strategy:
+      matrix:
+        python-version: ["3.10"]
 
-  #   steps:
-  #     - uses: actions/checkout@v2
+    steps:
+      - uses: actions/checkout@v2
 
-  #     - name: Set up Python ${{ matrix.python-version }}
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
 
-  #     - name: Load submodules
-  #       run: |
-  #         git submodule update --init
+      - name: Load submodules
+        run: |
+          git submodule update --init
 
-  #     - name: Download Boost
-  #       run: |
-  #         curl -O https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2
-  #         tar -xjf boost_1_76_0.tar.bz2
-  #         rm boost_1_76_0.tar.bz2
+      - name: Download Boost
+        run: |
+          curl -O https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2
+          tar -xjf boost_1_76_0.tar.bz2
+          rm boost_1_76_0.tar.bz2
 
-  #     - name: Download lp_solve
-  #       run: |
-  #         curl -L -o lp_solve_5.5.2.11_source.tar.gz https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_source.tar.gz/download
-  #         tar xzvf lp_solve_5.5.2.11_source.tar.gz
-  #         rm lp_solve_5.5.2.11_source.tar.gz
+      - name: Download lp_solve
+        run: |
+          curl -L -o lp_solve_5.5.2.11_source.tar.gz https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_source.tar.gz/download
+          tar xzvf lp_solve_5.5.2.11_source.tar.gz
+          rm lp_solve_5.5.2.11_source.tar.gz
 
-  #     - name: Install Homebrew deps
-  #       run: |
-  #         brew install --formula suite-sparse llvm libomp
-  #         echo "HOMEBREW_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
+      - name: Install Homebrew deps
+        run: |
+          brew install --formula suite-sparse llvm libomp
+          echo "HOMEBREW_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
 
-  #     - name: Set compiler environment
-  #       run: |
-  #         echo "CC=$(brew --prefix)/opt/llvm/bin/clang" >> $GITHUB_ENV
-  #         echo "CXX=$(brew --prefix)/opt/llvm/bin/clang++" >> $GITHUB_ENV
-  #         echo "PATH=$(brew --prefix)/opt/llvm/bin:$PATH" >> $GITHUB_ENV
+      - name: Set compiler environment
+        run: |
+          echo "CC=$(brew --prefix)/opt/llvm/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$(brew --prefix)/opt/llvm/bin/clang++" >> $GITHUB_ENV
+          echo "PATH=$(brew --prefix)/opt/llvm/bin:$PATH" >> $GITHUB_ENV
 
-  #     - name: Install Python build tools
-  #       run: |
-  #         pip install --upgrade pip setuptools wheel cython numpy cibuildwheel
+      - name: Install Python build tools
+        run: |
+          pip install --upgrade pip setuptools wheel cython numpy cibuildwheel
 
-  #     - name: Build wheels for macOS
-  #       env:
-  #         CIBW_BUILD: "cp310-macosx_x86_64"
-  #         CIBW_ARCHS_MACOS: "x86_64"
-  #         CIBW_ENVIRONMENT: >
-  #           CC=$(brew --prefix)/opt/llvm/bin/clang
-  #           CXX=$(brew --prefix)/opt/llvm/bin/clang++
-  #           CFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -I$(brew --prefix)/opt/suite-sparse/include/suitesparse'
-  #           CXXFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -stdlib=libc++'
-  #           LDFLAGS='-stdlib=libc++ -L$(brew --prefix)/opt/llvm/lib -L$(brew --prefix)/opt/suite-sparse/lib -lomp'
-  #       run: cibuildwheel --platform macos --output-dir dist
+      - name: Build wheels for macOS
+        env:
+          CIBW_BUILD: "cp310-macosx_x86_64"
+          CIBW_ARCHS_MACOS: "x86_64"
+          CIBW_ENVIRONMENT: >
+            CC=$(brew --prefix)/opt/llvm/bin/clang
+            CXX=$(brew --prefix)/opt/llvm/bin/clang++
+            CFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -I$(brew --prefix)/opt/suite-sparse/include/suitesparse'
+            CXXFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -stdlib=libc++'
+            LDFLAGS='-stdlib=libc++ -L$(brew --prefix)/opt/llvm/lib -L$(brew --prefix)/opt/suite-sparse/lib -lomp'
+        run: cibuildwheel --platform macos --output-dir dist
 
-  #     - uses: actions/upload-artifact@v4
-  #       with:
-  #         name: wheels-macos
-  #         path: dist/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-macos
+          path: dist/
 
-  #     - name: Install and test built wheel
-  #       run: |
-  #         WHEEL_FILE=$(ls dist/*cp310*macosx*_x86_64.whl | head -n 1)
-  #         pip install "$WHEEL_FILE"
+      - name: Install and test built wheel
+        run: |
+          WHEEL_FILE=$(ls dist/*cp310*macosx*_x86_64.whl | head -n 1)
+          pip install "$WHEEL_FILE"
 
-  #     - name: Run tests
-  #       run: |
-  #         python3 tests/fba.py
-  #         python3 tests/full_dimensional.py
-  #         python3 tests/max_ball.py
-  #         python3 tests/scaling.py
-  #         python3 tests/sampling.py
-  #         python3 tests/sampling_no_multiphase.py
+      - name: Run tests
+        run: |
+          python3 tests/fba.py
+          python3 tests/full_dimensional.py
+          python3 tests/max_ball.py
+          python3 tests/scaling.py
+          python3 tests/sampling.py
+          python3 tests/sampling_no_multiphase.py
 
   # ------------------------------------------------------------------------------------------
 
   # Publish
-  # publish-testpypi:
-  #   name: Upload to TestPyPI
-  #   needs: [build-macos] # build-linux, build-macos
-  #   runs-on: ubuntu-latest
-  #   environment:
-  #     name: testpypi
+  publish-testpypi:
+    name: Upload to TestPyPI
+    needs: [build-macos] # build-linux, build-macos
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
 
-  #   steps:
-  #     - uses: actions/download-artifact@v4
-  #       with:
-  #         name: wheels
-  #         path: dist/
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: wheels
+          path: dist/
 
-  #     - name: Install Twine
-  #       run: python -m pip install twine
+      - name: Install Twine
+        run: python -m pip install twine
 
-  #     # - name: Publish to TestPyPI
-  #     #   run: |
-  #     #     twine upload --repository testpypi dist/*
-  #     #   env:
-  #     #     TWINE_USERNAME: __token__
-  #     #     TWINE_PASSWORD: ${{ secrets.TESTPYPI_API_TOKEN }}
-
-  #     - name: Publish package to TestPyPI
-  #       uses: pypa/gh-action-pypi-publish@release/v1
-  #       with:
-  #         password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-  #         repository-url: https://test.pypi.org/legacy/
-  #         packages-dir: dist/
+      - name: Publish package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: dist/
