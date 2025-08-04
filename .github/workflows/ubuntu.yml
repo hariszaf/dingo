@@ -172,8 +172,6 @@ jobs:
 
           cibuildwheel --platform macos --output-dir dist
 
-      # The macos wheel seems that is being built correctly!
-
       - name: Install dependencies and set flags for SuiteSparse
         run: |
           export CFLAGS="-I/usr/local/opt/suite-sparse/include/suitesparse"
@@ -181,9 +179,13 @@ jobs:
 
           pip install sparseqr
 
+      # sparseqr is now available; but do i really have a wheel?
       - name: Install and test the built wheel
         run: |
-          WHEEL_FILE=$(ls downloaded_wheels/*cp310*macosx*_x86_64.whl | head -n 1)
+          echo "All wheels in dist/"
+          ls dist/
+          WHEEL_FILE=$(ls dist/*cp310*macosx*.whl | head -n 1)
+          echo "Installing $WHEEL_FILE"
           pip install "$WHEEL_FILE"
 
       - name: Run tests
