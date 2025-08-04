@@ -125,6 +125,11 @@ jobs:
           brew install --formula suite-sparse llvm libomp
           echo "HOMEBREW_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
 
+      - name: Check compiler
+        run: |
+          which clang++
+          clang++ --version
+
       - name: Set compiler environment
         run: |
           echo "CC=$(brew --prefix)/opt/llvm/bin/clang" >> $GITHUB_ENV

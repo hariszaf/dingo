@@ -7,7 +7,7 @@
 # Licensed under GNU LGPL.3, see LICENCE file
 
 # This is the setup Python script for building the dingo library
-import re
+import os
 import numpy
 import platform
 
@@ -73,25 +73,26 @@ disable_simd_flags = []
 # std::is_same_v --> c++17
 
 if current_platform == "Darwin":
-
     if arch in ("x86_64", "i386", "i686"):
         disable_simd_flags = ["-mno-sse", "-mno-sse2", "-mno-avx"]
 
+    # Get OpenMP paths from brew
+    brew_prefix = os.popen("brew --prefix libomp").read().strip()
+    omp_include = os.path.join(brew_prefix, "include")
+    omp_lib = os.path.join(brew_prefix, "lib")
+
     base_compiler_args.extend([
         "-Xpreprocessor", "-fopenmp",
-        "-stdlib=libc++"
+        "-stdlib=libc++",
+        f"-I{omp_include}"
     ])
     base_link_args.extend([
         "-Xpreprocessor", "-fopenmp",
         "-lomp",
         "-stdlib=libc++",
-        "-ldl", "-lm"
+        "-ldl", "-lm",
+        f"-L{omp_lib}"
     ])
-elif current_platform == "Linux":
-
-    base_compiler_args.append("-fopenmp")
-    base_link_args.extend(["-fopenmp", "-ldl", "-lm"])
-
 
 # Final flags
 compiler_args = disable_simd_flags + base_compiler_args + lp_solve_compiler_args

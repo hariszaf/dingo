@@ -48,8 +48,11 @@ typedef typename Kernel::Point    Point;
 typedef Eigen::Matrix<NT, Eigen::Dynamic, Eigen::Dynamic> DenseMT;
 typedef HPolytope<Point, DenseMT> Hpolytope;
 
-typedef typename Hpolytope::MT    MT;
-typedef typename Hpolytope::VT    VT;
+// typedef typename Hpolytope::MT    MT;
+// typedef typename Hpolytope::VT    VT;
+typedef Hpolytope::MT    MT;
+typedef Hpolytope::VT    VT;
+
 typedef BoostRandomNumberGenerator<boost::mt19937, double>    RNGType;
 
 
@@ -123,7 +126,7 @@ class HPolytopeCPP{
 
    public:
 
-      std::pair<Point,NT> CheBall;
+      std::pair<Point, NT> CheBall;
 
       // regarding the rounding step
       typedef std::tuple<MT, VT, NT>    round_result;
