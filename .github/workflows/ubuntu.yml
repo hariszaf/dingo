@@ -155,8 +155,8 @@ jobs:
           CIBW_ENVIRONMENT: >
             CC=$(brew --prefix)/opt/llvm/bin/clang
             CXX=$(brew --prefix)/opt/llvm/bin/clang++
-            CFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -I$(brew --prefix)/opt/suite-sparse/include/suitesparse'
-            CXXFLAGS='-O3 -std=c++17 -arch x86_64 -mno-sse -mno-sse2 -mno-avx -stdlib=libc++ -Wno-deprecated-declarations'
+            CFLAGS='-O3 -std=c++17 -arch x86_64 -I$(brew --prefix)/opt/suite-sparse/include/suitesparse'
+            CXXFLAGS='-O3 -std=c++17 -arch x86_64 -stdlib=libc++ -Wno-deprecated-declarations'
             LDFLAGS='-stdlib=libc++ -L$(brew --prefix)/opt/llvm/lib -L$(brew --prefix)/opt/suite-sparse/lib -lomp'
         run: cibuildwheel --platform macos --output-dir dist
 
