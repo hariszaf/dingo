@@ -158,13 +158,20 @@ jobs:
           CIBW_BUILD: "cp310-macosx_x86_64"
           CIBW_ARCHS_MACOS: "x86_64"
         run: |
+
           HOMEBREW_PREFIX=$(brew --prefix)
           CC=$HOMEBREW_PREFIX/opt/llvm/bin/clang
           CXX=$HOMEBREW_PREFIX/opt/llvm/bin/clang++
-          CFLAGS="-O3 -std=c++17 -arch x86_64 -I$HOMEBREW_PREFIX/opt/suite-sparse/include/suitesparse"
+
+          # CFLAGS should not have C++ flags
+          CFLAGS="-O3 -arch x86_64 -I$HOMEBREW_PREFIX/opt/suite-sparse/include/suitesparse"
+
+          # CXXFLAGS should include C++ flags
           CXXFLAGS="-O3 -std=c++17 -arch x86_64 -stdlib=libc++ -Wno-deprecated-declarations"
           LDFLAGS="-stdlib=libc++ -L$HOMEBREW_PREFIX/opt/llvm/lib -L$HOMEBREW_PREFIX/opt/suite-sparse/lib -lomp"
+
           export CC CXX CFLAGS CXXFLAGS LDFLAGS
+
           cibuildwheel --platform macos --output-dir dist
 
       # env:
