@@ -108,13 +108,13 @@ jobs:
         run: |
           git submodule update --init
 
-      # - name: Modify Template Usage
-      #   run: |
-      #     # Modify the template function calls in the specified files using sed
-      #     sed -i '' 's/walk\.template parameters_burnin(/walk.template parameters_burnin<>(/' volesti/include/sampling/mmcs.hpp
-      #     sed -i '' 's/walk\.template get_starting_point(/walk.template get_starting_point<>(/' volesti/include/sampling/mmcs.hpp
-      #     sed -i '' 's/walk\.template parameters_burnin(/walk.template parameters_burnin<>(/' volesti/include/sampling/parallel_mmcs.hpp
-      #     sed -i '' 's/walk\.template get_starting_point(/walk.template get_starting_point<>(/' volesti/include/sampling/parallel_mmcs.hpp
+      - name: Modify Template Usage
+        run: |
+          # Modify the template function calls in the specified files using sed
+          sed -i '' 's/walk\.template parameters_burnin(/walk.template parameters_burnin<>(/' volesti/include/sampling/mmcs.hpp
+          sed -i '' 's/walk\.template get_starting_point(/walk.template get_starting_point<>(/' volesti/include/sampling/mmcs.hpp
+          sed -i '' 's/walk\.template parameters_burnin(/walk.template parameters_burnin<>(/' volesti/include/sampling/parallel_mmcs.hpp
+          sed -i '' 's/walk\.template get_starting_point(/walk.template get_starting_point<>(/' volesti/include/sampling/parallel_mmcs.hpp
 
       - name: Download Boost
         run: |
