@@ -133,6 +133,11 @@ jobs:
           brew install --formula suite-sparse llvm libomp
           echo "HOMEBREW_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
 
+      - name: List files in suite-sparse
+        run: |
+          HOMEBREW_PREFIX=$(brew --prefix)
+          find $HOMEBREW_PREFIX/opt/suite-sparse/include/suitesparse -type f
+
       - name: Check compiler
         run: |
           which clang++
@@ -152,13 +157,26 @@ jobs:
         env:
           CIBW_BUILD: "cp310-macosx_x86_64"
           CIBW_ARCHS_MACOS: "x86_64"
-          CIBW_ENVIRONMENT: >
-            CC=$(brew --prefix)/opt/llvm/bin/clang
-            CXX=$(brew --prefix)/opt/llvm/bin/clang++
-            CFLAGS='-O3 -std=c++17 -arch x86_64 -I$(brew --prefix)/opt/suite-sparse/include/suitesparse'
-            CXXFLAGS='-O3 -std=c++17 -arch x86_64 -stdlib=libc++ -Wno-deprecated-declarations'
-            LDFLAGS='-stdlib=libc++ -L$(brew --prefix)/opt/llvm/lib -L$(brew --prefix)/opt/suite-sparse/lib -lomp'
-        run: cibuildwheel --platform macos --output-dir dist
+        run: |
+          HOMEBREW_PREFIX=$(brew --prefix)
+          CC=$HOMEBREW_PREFIX/opt/llvm/bin/clang
+          CXX=$HOMEBREW_PREFIX/opt/llvm/bin/clang++
+          CFLAGS="-O3 -std=c++17 -arch x86_64 -I$HOMEBREW_PREFIX/opt/suite-sparse/include/suitesparse"
+          CXXFLAGS="-O3 -std=c++17 -arch x86_64 -stdlib=libc++ -Wno-deprecated-declarations"
+          LDFLAGS="-stdlib=libc++ -L$HOMEBREW_PREFIX/opt/llvm/lib -L$HOMEBREW_PREFIX/opt/suite-sparse/lib -lomp"
+          export CC CXX CFLAGS CXXFLAGS LDFLAGS
+          cibuildwheel --platform macos --output-dir dist
+
+      # env:
+      #   CIBW_BUILD: "cp310-macosx_x86_64"
+      #   CIBW_ARCHS_MACOS: "x86_64"
+      #   CIBW_ENVIRONMENT: >
+      #     CC=$(brew --prefix)/opt/llvm/bin/clang
+      #     CXX=$(brew --prefix)/opt/llvm/bin/clang++
+      #     CFLAGS='-O3 -std=c++17 -arch x86_64 -I$(brew --prefix)/opt/suite-sparse/include/suitesparse'
+      #     CXXFLAGS='-O3 -std=c++17 -arch x86_64 -stdlib=libc++ -Wno-deprecated-declarations'
+      #     LDFLAGS='-stdlib=libc++ -L$(brew --prefix)/opt/llvm/lib -L$(brew --prefix)/opt/suite-sparse/lib -lomp'
+      # run: cibuildwheel --platform macos --output-dir dist
 
       - uses: actions/upload-artifact@v4
         with:
