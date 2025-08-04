@@ -3,6 +3,7 @@
 
 # Copyright (c) 2021 Apostolos Chalkis
 # Copyright (c) 2024 Ke Shi
+# Contributed and/or modified by Haris Zafeiropoulos
 
 # Licensed under GNU LGPL.3, see LICENCE file
 
@@ -30,12 +31,12 @@ class PolytopeSampler:
 
         self._metabolic_network = metabol_net
 
-        self._A       = np.empty((0, 0))  # Empty 2D array
-        self._b       = np.empty((0,))    # Empty 1D array
-        self._N       = np.empty((0, 0))  # Empty 2D array
-        self._N_shift = np.empty((0,))    # Empty 1D array
-        self._T       = np.empty((0, 0))  # Empty 2D array
-        self._T_shift = np.empty((0,))    # Empty 1D array
+        self._A       = np.empty((0, 0))
+        self._b       = np.empty((0,))
+        self._N       = np.empty((0, 0))
+        self._N_shift = np.empty((0,))
+        self._T       = np.empty((0, 0))
+        self._T_shift = np.empty((0,))
 
         self._parameters = {}
         self._parameters["tol"]                     = 1e-06

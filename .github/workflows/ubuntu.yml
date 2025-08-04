@@ -120,7 +120,7 @@ jobs:
 
       - name: Install Homebrew deps
         run: |
-          brew install suite-sparse llvm libomp
+          brew install --formula suite-sparse llvm libomp
           echo "HOMEBREW_PREFIX=$(brew --prefix)" >> $GITHUB_ENV
 
       - name: Set compiler environment
