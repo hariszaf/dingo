@@ -171,7 +171,7 @@ jobs:
   # Publish
   publish-testpypi:
     name: Upload to TestPyPI
-    needs: [build-macos] # build-linux, build-macos
+    needs: [build-linux, build-macos]
     runs-on: ubuntu-latest
     environment:
       name: testpypi

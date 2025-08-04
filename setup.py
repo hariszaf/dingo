@@ -64,17 +64,19 @@ lp_solve_compiler_args = [
     "-DINVERSE_ACTIVE=3",
     "-DLoadableBlasLib=0"
 ]
+base_compiler_args = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR"]
 
 # SIMD disabling (only for x86 architectures)
 disable_simd_flags = []
 
 # Platform-specific settings
+# std::is_same_v --> c++17
+
 if current_platform == "Darwin":
 
     if arch in ("x86_64", "i386", "i686"):
         disable_simd_flags = ["-mno-sse", "-mno-sse2", "-mno-avx"]
 
-    base_compiler_args = ["-std=c++14", "-O3", "-DBOOST_NO_AUTO_PTR"]  # downgraded here
     base_compiler_args.extend([
         "-Xpreprocessor", "-fopenmp",
         "-stdlib=libc++"
@@ -86,12 +88,10 @@ if current_platform == "Darwin":
         "-ldl", "-lm"
     ])
 elif current_platform == "Linux":
-    base_compiler_args = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR"]  # keep C++17
+
     base_compiler_args.append("-fopenmp")
     base_link_args.extend(["-fopenmp", "-ldl", "-lm"])
-else:
-    # Default for other platforms (e.g., Windows)
-    base_compiler_args = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR"]
+
 
 # Final flags
 compiler_args = disable_simd_flags + base_compiler_args + lp_solve_compiler_args

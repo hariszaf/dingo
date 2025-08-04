@@ -32,7 +32,7 @@ HPolytopeCPP::HPolytopeCPP(double *A_np, double *b_np, int n_hyperplanes, int n_
    int index = 0;
    for (int i = 0; i < n_hyperplanes; i++){
       b(i) = b_np[i];
-      for (int j=0; j < n_variables; j++){
+      for (int j = 0; j < n_variables; j++){
          A(i,j) = A_np[index];
          index++;
       }
