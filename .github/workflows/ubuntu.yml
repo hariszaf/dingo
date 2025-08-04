@@ -33,14 +33,6 @@ jobs:
         run: |
           git submodule update --init;
 
-      - name: Modify Template Usage on volesti header files
-        run: |
-          # Modify the template function calls in the specified files
-          sed -i '' 's/walk.template parameters_burnin(/walk.template parameters_burnin<>(/' volesti/include/sampling/mmcs.hpp
-          sed -i '' 's/walk.template get_starting_point(/walk.template get_starting_point<>(/' volesti/include/sampling/mmcs.hpp
-          sed -i '' 's/walk.template parameters_burnin(/walk.template parameters_burnin<>(/' volesti/include/sampling/parallel_mmcs.hpp
-          sed -i '' 's/walk.template get_starting_point(/walk.template get_starting_point<>(/' volesti/include/sampling/parallel_mmcs.hpp
-
       - name: Download and unzip the boost library
         run: |
           curl -O https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2;
@@ -115,6 +107,14 @@ jobs:
       - name: Load submodules
         run: |
           git submodule update --init
+
+      # - name: Modify Template Usage
+      #   run: |
+      #     # Modify the template function calls in the specified files using sed
+      #     sed -i '' 's/walk\.template parameters_burnin(/walk.template parameters_burnin<>(/' volesti/include/sampling/mmcs.hpp
+      #     sed -i '' 's/walk\.template get_starting_point(/walk.template get_starting_point<>(/' volesti/include/sampling/mmcs.hpp
+      #     sed -i '' 's/walk\.template parameters_burnin(/walk.template parameters_burnin<>(/' volesti/include/sampling/parallel_mmcs.hpp
+      #     sed -i '' 's/walk\.template get_starting_point(/walk.template get_starting_point<>(/' volesti/include/sampling/parallel_mmcs.hpp
 
       - name: Download Boost
         run: |

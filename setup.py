@@ -73,8 +73,8 @@ disable_simd_flags = []
 # std::is_same_v --> c++17
 
 if current_platform == "Darwin":
-    if arch in ("x86_64", "i386", "i686"):
-        disable_simd_flags = ["-mno-sse", "-mno-sse2", "-mno-avx"]
+    # if arch in ("x86_64", "i386", "i686"):
+    #     disable_simd_flags = ["-mno-sse", "-mno-sse2", "-mno-avx"]
 
     # Get OpenMP paths from brew
     brew_prefix = os.popen("brew --prefix libomp").read().strip()
