@@ -138,11 +138,16 @@ jobs:
           which clang++
           clang++ --version
 
-      - name: Set compiler environment
+      # - name: Set compiler environment
+      #   run: |
+      #     echo "CC=$(brew --prefix)/opt/llvm/bin/clang" >> $GITHUB_ENV
+      #     echo "CXX=$(brew --prefix)/opt/llvm/bin/clang++" >> $GITHUB_ENV
+      #     echo "PATH=$(brew --prefix)/opt/llvm/bin:$PATH" >> $GITHUB_ENV
+
+      - name: List files in suite-sparse
         run: |
-          echo "CC=$(brew --prefix)/opt/llvm/bin/clang" >> $GITHUB_ENV
-          echo "CXX=$(brew --prefix)/opt/llvm/bin/clang++" >> $GITHUB_ENV
-          echo "PATH=$(brew --prefix)/opt/llvm/bin:$PATH" >> $GITHUB_ENV
+          HOMEBREW_PREFIX=$(brew --prefix)
+          find $HOMEBREW_PREFIX/opt/suite-sparse/include/suitesparse -type f
 
       - name: Install Python build tools
         run: |
@@ -153,19 +158,37 @@ jobs:
           CIBW_BUILD: "cp310-macosx_x86_64"
           CIBW_ARCHS_MACOS: "x86_64"
           MACOSX_DEPLOYMENT_TARGET: "13.0"
+        # run: |
+        #   HOMEBREW_PREFIX=$(brew --prefix)
+        #   CC=$HOMEBREW_PREFIX/opt/llvm/bin/clang
+        #   CXX=$HOMEBREW_PREFIX/opt/llvm/bin/clang++
+        #   echo "PATH=$(brew --prefix)/opt/llvm/bin:$PATH" >> $GITHUB_ENV
+
+        #   # CFLAGS should not have C++ flags
+        #   CFLAGS="-O3 -arch x86_64 -I$HOMEBREW_PREFIX/opt/suite-sparse/include/suitesparse"
+
+        #   # CXXFLAGS should include C++ flags
+        #   CXXFLAGS="-O3 -std=c++17 -arch x86_64 -stdlib=libc++ -Wno-deprecated-declarations"
+        #   LDFLAGS="-stdlib=libc++ -L$HOMEBREW_PREFIX/opt/llvm/lib -L$HOMEBREW_PREFIX/opt/suite-sparse/lib -lomp"
+
+        #   export CC CXX CFLAGS CXXFLAGS LDFLAGS
+
+        #   cibuildwheel --platform macos --output-dir dist
         run: |
           HOMEBREW_PREFIX=$(brew --prefix)
-          CC=$HOMEBREW_PREFIX/opt/llvm/bin/clang
-          CXX=$HOMEBREW_PREFIX/opt/llvm/bin/clang++
+          echo "PATH=$HOMEBREW_PREFIX/opt/llvm/bin:$PATH" >> $GITHUB_ENV
 
-          # CFLAGS should not have C++ flags
-          CFLAGS="-O3 -arch x86_64 -I$HOMEBREW_PREFIX/opt/suite-sparse/include/suitesparse"
+          export CC=$HOMEBREW_PREFIX/opt/llvm/bin/clang
+          export CXX=$HOMEBREW_PREFIX/opt/llvm/bin/clang++
 
-          # CXXFLAGS should include C++ flags
-          CXXFLAGS="-O3 -std=c++17 -arch x86_64 -stdlib=libc++ -Wno-deprecated-declarations"
-          LDFLAGS="-stdlib=libc++ -L$HOMEBREW_PREFIX/opt/llvm/lib -L$HOMEBREW_PREFIX/opt/suite-sparse/lib -lomp"
+          CIBW_ENVIRONMENT="\
+            CC=$CC \
+            CXX=$CXX \
+            CFLAGS='-O3 -arch x86_64 -I$HOMEBREW_PREFIX/opt/suite-sparse/include/suitesparse' \
+            CXXFLAGS='-O3 -std=c++17 -arch x86_64 -stdlib=libc++ -Wno-deprecated-declarations' \
+            LDFLAGS='-stdlib=libc++ -L$HOMEBREW_PREFIX/opt/llvm/lib -L$HOMEBREW_PREFIX/opt/suite-sparse/lib -lomp'"
 
-          export CC CXX CFLAGS CXXFLAGS LDFLAGS
+          export CIBW_ENVIRONMENT
 
           cibuildwheel --platform macos --output-dir dist
 
@@ -187,6 +210,16 @@ jobs:
           python3 tests/scaling.py
           python3 tests/sampling.py
           python3 tests/sampling_no_multiphase.py
+
+
+
+      - name: Set SuiteSparse build flags
+      run: |
+        echo "CFLAGS=-I$(brew --prefix)/opt/suite-sparse/include/suitesparse" >> $GITHUB_ENV
+        echo "LDFLAGS=-L$(brew --prefix)/opt/suite-sparse/lib" >> $GITHUB_ENV
+
+
+
 
   # ------------------------------------------------------------------------------------------
 
