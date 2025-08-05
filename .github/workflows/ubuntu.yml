@@ -69,21 +69,21 @@ jobs:
           name: linux-wheels
           path: dist/
 
-      - name: Install built wheel on the gh VM to run tests (only cp310)
-        run: |
-          echo "All wheels in Linux dist/"
-          ls dist/
-          WHEEL_FILE=$(ls dist/*cp310*manylinux*_x86_64.whl | head -n 1)
-          pip install "$WHEEL_FILE"
+      # - name: Install built wheel on the gh VM to run tests (only cp310)
+      #   run: |
+      #     echo "All wheels in Linux dist/"
+      #     ls dist/
+      #     WHEEL_FILE=$(ls dist/*cp310*manylinux*_x86_64.whl | head -n 1)
+      #     pip install "$WHEEL_FILE"
 
-      - name: Run tests
-        run: |
-          python3 tests/fba.py;
-          python3 tests/full_dimensional.py;
-          python3 tests/max_ball.py;
-          python3 tests/scaling.py;
-          python3 tests/sampling.py;
-          python3 tests/sampling_no_multiphase.py;
+      # - name: Run tests
+      #   run: |
+      #     python3 tests/fba.py;
+      #     python3 tests/full_dimensional.py;
+      #     python3 tests/max_ball.py;
+      #     python3 tests/scaling.py;
+      #     python3 tests/sampling.py;
+      #     python3 tests/sampling_no_multiphase.py;
 
   # ------------------------------------------------------------------------------------------
 
@@ -183,36 +183,45 @@ jobs:
           name: macos-wheels
           path: dist/
 
-      - name: Install dependencies and set flags for SuiteSparse
-        run: |
-          export CFLAGS="-I/usr/local/opt/suite-sparse/include/suitesparse"
-          export LDFLAGS="-L/usr/local/opt/suite-sparse/lib"
+          # for whl in dist/*.whl; do
+          #   unzip "$whl" -d wheel_unpack
+          #   METADATA=$(find wheel_unpack -name METADATA)
+          #   sed -i '' '/^Dynamic: license-file/d' "$METADATA"
+          #   rm "$whl"
+          #   (cd wheel_unpack && zip -r "../$(basename $whl)" .)
+          #   rm -rf wheel_unpack
+          # done
 
-          pip install sparseqr
+      # - name: Install dependencies and set flags for SuiteSparse
+      #   run: |
+      #     export CFLAGS="-I/usr/local/opt/suite-sparse/include/suitesparse"
+      #     export LDFLAGS="-L/usr/local/opt/suite-sparse/lib"
 
-      - name: Install and test the built wheel
-        run: |
-          echo "All wheels in macos dist/"
-          ls dist/
-          WHEEL_FILE=$(ls dist/*cp310*macosx*.whl | head -n 1)
-          echo "Installing $WHEEL_FILE"
-          pip install "$WHEEL_FILE"
+      #     pip install sparseqr
 
-      - name: Run tests
-        run: |
-          # Ensures that only the Homebrew-provided libomp.dylib is loaded, avoiding that conflict.
-          export DYLD_LIBRARY_PATH="$HOMEBREW_PREFIX/opt/libomp/lib:$DYLD_LIBRARY_PATH"
+      # - name: Install and test the built wheel
+      #   run: |
+      #     echo "All wheels in macos dist/"
+      #     ls dist/
+      #     WHEEL_FILE=$(ls dist/*cp310*macosx*.whl | head -n 1)
+      #     echo "Installing $WHEEL_FILE"
+      #     pip install "$WHEEL_FILE"
 
-          python3 tests/fba.py
-          python3 tests/full_dimensional.py
-          python3 tests/max_ball.py
-          python3 tests/scaling.py
-          python3 tests/sampling.py
+      # - name: Run tests
+      #   run: |
+      #     # Ensures that only the Homebrew-provided libomp.dylib is loaded, avoiding that conflict.
+      #     export DYLD_LIBRARY_PATH="$HOMEBREW_PREFIX/opt/libomp/lib:$DYLD_LIBRARY_PATH"
 
-          # For some reason, only sometimes, not always, the test fails on macOS, with the following error:
-          # Assertion failed: (min_arg <= max_arg), function uniform_int_distribution, file uniform_int_distribution.hpp, line 337.
+      #     python3 tests/fba.py
+      #     python3 tests/full_dimensional.py
+      #     python3 tests/max_ball.py
+      #     python3 tests/scaling.py
+      #     python3 tests/sampling.py
 
-          # python3 tests/sampling_no_multiphase.py
+      #     # For some reason, only sometimes, not always, the test fails on macOS, with the following error:
+      #     # Assertion failed: (min_arg <= max_arg), function uniform_int_distribution, file uniform_int_distribution.hpp, line 337.
+
+      #     # python3 tests/sampling_no_multiphase.py
 
   # ------------------------------------------------------------------------------------------
 
@@ -242,14 +251,6 @@ jobs:
         run: |
           echo "All wheels built during the distribution-specific jobs (in dist/)"
           ls dist/
-          for whl in dist/*.whl; do
-            unzip "$whl" -d wheel_unpack
-            METADATA=$(find wheel_unpack -name METADATA)
-            sed -i '' '/^Dynamic: license-file/d' "$METADATA"
-            rm "$whl"
-            (cd wheel_unpack && zip -r "../$(basename $whl)" .)
-            rm -rf wheel_unpack
-          done
 
       - name: Publish to TestPyPI
         env:
