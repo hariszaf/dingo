@@ -63,7 +63,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: linux-wheels
           path: dist/
 
       - name: Install built wheel on the gh VM to run tests (only cp310)
@@ -172,6 +172,11 @@ jobs:
 
           cibuildwheel --platform macos --output-dir dist
 
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-wheels
+          path: dist/
+
       - name: Install dependencies and set flags for SuiteSparse
         run: |
           export CFLAGS="-I/usr/local/opt/suite-sparse/include/suitesparse"
@@ -179,7 +184,6 @@ jobs:
 
           pip install sparseqr
 
-      # sparseqr is now available; but do i really have a wheel?
       - name: Install and test the built wheel
         run: |
           echo "All wheels in dist/"
@@ -213,42 +217,20 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: wheels
+          name: linux-wheels
+          path: dist/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-wheels
           path: dist/
 
       - name: Install Twine
         run: python -m pip install twine
 
       - name: Publish to TestPyPI
-        run: |
-          twine upload --repository-url https://test.pypi.org/legacy/ dist/*
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TESTPYPI_API_TOKEN }}
-
-  publish-testpypi-alternative:
-    name: Publish package to TestPyPI
-    needs: [build-linux, build-macos]
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: wheels
-          path: dist/
-
-      - name: List contents of dist/
-        run: ls -la dist/
-
-      - name: Install Twine
-        run: python -m pip install twine
-
-      - name: Verify Twine installation
-        run: twine --version
-
-      - name: Publish package to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository-url: https://test.pypi.org/legacy/
-          packages-dir: dist/
+        run: |
+          twine upload --repository-url https://test.pypi.org/legacy/ dist/*
