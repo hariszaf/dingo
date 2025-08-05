@@ -22,7 +22,11 @@ ext_data = root_dir / "ext_data"
 
 def sampling(model, testing_class):
 
-    sampler = PolytopeSampler(model)
+    try:
+        sampler = PolytopeSampler(model)
+    except Exception as e:
+        print(f"❌ Failed to initialize PolytopeSampler: {e}")
+        raise
 
     test_cases = [
         ("billiard_walk", {"n": 500, "burn_in": 20, "thinning":100}),

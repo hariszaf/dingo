@@ -11,16 +11,15 @@
 import math
 import numpy as np
 
-from dingo.MetabolicNetwork import MetabolicNetwork
+
 from dingo.utils import (
     map_samples_to_steady_states,
     get_matrices_of_low_dim_polytope,
     get_matrices_of_full_dim_polytope,
 )
-
-from dingo.pyoptinterface_based_impl import fba,fva,inner_ball,remove_redundant_facets
-
 from dingo.volestipy import HPolytope
+from dingo.MetabolicNetwork import MetabolicNetwork
+from dingo.pyoptinterface_based_impl import remove_redundant_facets
 
 
 class PolytopeSampler:
@@ -49,7 +48,7 @@ class PolytopeSampler:
 
     def get_polytope(self):
         """A member function to derive the corresponding full dimensional polytope
-        and a isometric linear transformation that maps the latter to the initial space.
+        and an isometric linear transformation that maps the latter to the initial space.
         """
 
         if (
@@ -236,11 +235,16 @@ class PolytopeSampler:
         Keyword arguments:
         A -- an mxn matrix that contains the normal vectors of the facets of the polytope row-wise
         b -- a m-dimensional vector, s.t. A*x <= b
-        method -- An MCMC method to sample, i.e. {'billiard_walk', 'cdhr', 'rdhr', 'ball_walk', 'dikin_walk', 'john_walk', 'vaidya_walk', 'gaussian_hmc_walk', 'exponential_hmc_walk', 'hmc_leapfrog_gaussian', 'hmc_leapfrog_exponential'}
+        method -- An MCMC method to sample, i.e. {'billiard_walk', 'cdhr', 'rdhr', 'ball_walk', 'dikin_walk', 'john_walk', 
+                'vaidya_walk', 'gaussian_hmc_walk', 'exponential_hmc_walk', 'hmc_leapfrog_gaussian', 'hmc_leapfrog_exponential'}
         n -- the number of steady states to sample
         burn_in -- the number of points to burn before sampling
         thinning -- the walk length of the chain
         """
+
+        if method == "mmcs":
+            raise Exception("MMCS is not supported in this method. Use generate_steady_states() instead.")
+
         if bias_vector is None:
             bias_vector = np.ones(A.shape[1], dtype=np.float64)
         else:

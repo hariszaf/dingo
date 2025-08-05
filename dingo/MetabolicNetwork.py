@@ -17,34 +17,34 @@ from dingo.pyoptinterface_based_impl import fba,fva,inner_ball,remove_redundant_
 class MetabolicNetwork:
     def __init__(self, tuple_args):
 
-        self._parameters = {}
-        self._parameters["opt_percentage"] = 100
-        self._parameters["distribution"] = "uniform"
+        self._parameters                     = {}
+        self._parameters["opt_percentage"]   = 100
+        self._parameters["distribution"]     = "uniform"
         self._parameters["nullspace_method"] = "sparseQR"
-        self._parameters["solver"] = None
+        self._parameters["solver"]           = None
 
         if len(tuple_args) != 10:
             raise Exception(
                 "An unknown input format given to initialize a metabolic network object."
             )
 
-        self._lb = tuple_args[0]
-        self._ub = tuple_args[1]
-        self._S = tuple_args[2]
-        self._metabolites = tuple_args[3]
-        self._reactions = tuple_args[4]
-        self._biomass_index = tuple_args[5]
+        self._lb                 = tuple_args[0]
+        self._ub                 = tuple_args[1]
+        self._S                  = tuple_args[2]
+        self._metabolites        = tuple_args[3]
+        self._reactions          = tuple_args[4]
+        self._biomass_index      = tuple_args[5]
         self._objective_function = tuple_args[6]
-        self._medium = tuple_args[7]
-        self._medium_indices = tuple_args[8]
-        self._exchanges = tuple_args[9]
+        self._medium             = tuple_args[7]
+        self._medium_indices     = tuple_args[8]
+        self._exchanges          = tuple_args[9]
 
         try:
             if self._biomass_index is not None and (
-                self._lb.size != self._ub.size
-                or self._lb.size != self._S.shape[1]
-                or len(self._metabolites) != self._S.shape[0]
-                or len(self._reactions) != self._S.shape[1]
+                self._lb.size                    != self._ub.size
+                or self._lb.size                 != self._S.shape[1]
+                or len(self._metabolites)        != self._S.shape[0]
+                or len(self._reactions)          != self._S.shape[1]
                 or self._objective_function.size != self._S.shape[1]
                 or (self._biomass_index < 0)
                 or (self._biomass_index > self._objective_function.size)
@@ -196,7 +196,6 @@ class MetabolicNetwork:
     def objective_function(self, value):
         self._objective_function = value
 
-
     @medium.setter
     def medium(self, medium: Dict[str, float]) -> None:
         """Set the constraints on the model exchanges.
@@ -225,9 +224,9 @@ class MetabolicNetwork:
                 if reaction has reactants (metabolites that are consumed). If reaction
                 has reactants, it seems the upper bound won't be set.
             """
-            if any(x < 0 for x in  list(self._S[:, reac_index])):
+            if any(x < 0 for x in list(self._S[:, reac_index])):
                 self._lb[reac_index] = -bound
-            elif any(x > 0 for x in  list(self._S[:, reac_index])):
+            elif any(x > 0 for x in list(self._S[:, reac_index])):
                 self._ub[reac_index] = bound
 
         # Set the given media bounds
@@ -255,13 +254,13 @@ class MetabolicNetwork:
             """
             # is_export = rxn.reactants and not rxn.products
             reac_index = self._reactions.index(rxn_id)
-            products = np.any(self._S[:,reac_index] > 0) 
+            products = np.any(self._S[:,reac_index] > 0)
             reactants_exist = np.any(self._S[:,reac_index] < 0)
             is_export = True if not products and reactants_exist else False
             set_active_bound(
                 rxn_id, reac_index, min(0.0, -self._lb[reac_index] if is_export else self._ub[reac_index])
             )
-    
+
     def set_solver(self, solver: str):
         self._parameters["solver"] = solver
 
