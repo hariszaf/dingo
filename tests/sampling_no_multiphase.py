@@ -24,6 +24,7 @@ def sampling(model, testing_class):
 
     try:
         sampler = PolytopeSampler(model)
+        print("✅ PolytopeSampler initialized successfully.")
     except Exception as e:
         print(f"❌ Failed to initialize PolytopeSampler: {e}")
         raise
@@ -51,19 +52,19 @@ class TestSampling(unittest.TestCase):
     def test_sample_json(self):
 
         input_file_json = ext_data / "e_coli_core.json"
-        model = MetabolicNetwork.from_json(input_file_json.as_posix())
+        model           = MetabolicNetwork.from_json(input_file_json.as_posix())
         sampling(model, self)
 
     def test_sample_mat(self):
 
         input_file_mat = ext_data / "e_coli_core.mat"
-        model = MetabolicNetwork.from_mat(input_file_mat.as_posix())
+        model          = MetabolicNetwork.from_mat(input_file_mat.as_posix())
         sampling(model, self)
 
     def test_sample_sbml(self):
 
         input_file_sbml = ext_data / "e_coli_core.xml"
-        model = MetabolicNetwork.from_sbml(input_file_sbml.as_posix())
+        model           = MetabolicNetwork.from_sbml(input_file_sbml.as_posix())
         sampling(model, self)
 
 
