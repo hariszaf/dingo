@@ -23,15 +23,15 @@ def read_json_file(input_file):
     input_file -- a json file that contains the information about a mettabolic network, for example see http://bigg.ucsd.edu/models
     """
 
-    try: 
-        cobra.io.load_matlab_model( input_file )
-    except:
+    try:
+        cobra.io.load_matlab_model(input_file)
+    except Exception:
         cobra_config = cobra.Configuration()
         cobra_config.solver = 'glpk'
 
-    model = cobra.io.load_json_model( input_file )
+    model = cobra.io.load_json_model(input_file)
 
-    return (parse_cobra_model( model ))
+    return (parse_cobra_model(model))
 
 def read_mat_file(input_file):
     """A Python function based on the  to read a .mat file and returns,
@@ -45,15 +45,15 @@ def read_mat_file(input_file):
     Keyword arguments:
     input_file -- a mat file that contains a MATLAB structure with the information about a mettabolic network, for example see http://bigg.ucsd.edu/models
     """
-    try: 
-        cobra.io.load_matlab_model( input_file )
-    except:
+    try:
+        cobra.io.load_matlab_model(input_file)
+    except Exception:
         cobra_config = cobra.Configuration()
         cobra_config.solver = 'glpk'
 
-    model = cobra.io.load_matlab_model( input_file )
+    model = cobra.io.load_matlab_model(input_file)
 
-    return (parse_cobra_model( model ))
+    return (parse_cobra_model(model))
 
 def read_sbml_file(input_file):
     """A Python function, based on the cobra.io.read_sbml_model() function of cabrapy  
@@ -71,44 +71,44 @@ def read_sbml_file(input_file):
     input_file -- a xml file that contains an SBML  model with the information about a mettabolic network, for example see: 
     https://github.com/VirtualMetabolicHuman/AGORA/blob/master/CurrentVersion/AGORA_1_03/AGORA_1_03_sbml/Abiotrophia_defectiva_ATCC_49176.xml
     """
-    try: 
-        cobra.io.read_sbml_model( input_file )
-    except:
+    try:
+        cobra.io.read_sbml_model(input_file)
+    except Exception:
         cobra_config = cobra.Configuration()
         cobra_config.solver = 'glpk'
 
-    model = cobra.io.read_sbml_model( input_file )
+    model = cobra.io.read_sbml_model(input_file)
 
-    return (parse_cobra_model( model ))
+    return (parse_cobra_model(model))
 
 def parse_cobra_model(cobra_model):
 
-    inf_bound=1e5
+    inf_bound = 1e5
 
-    metabolites = [ metabolite.id for metabolite in cobra_model.metabolites ]
-    reactions = [ reaction.id for reaction in cobra_model.reactions ]
+    metabolites = [metabolite.id for metabolite in cobra_model.metabolites]
+    reactions = [reaction.id for reaction in cobra_model.reactions]
 
     S = cobra.util.array.create_stoichiometric_matrix(cobra_model)
 
     lb  = []
     ub = []
-    biomass_function = np.zeros( len(cobra_model.reactions) )
+    biomass_function = np.zeros(len(cobra_model.reactions))
 
     for index, reaction in enumerate(cobra_model.reactions):
 
-        if reaction.objective_coefficient==1:
+        if reaction.objective_coefficient == 1:
             biomass_index = index
             biomass_function[index] = 1
 
         if reaction.bounds[0] == float("-inf"):
-            lb.append( -inf_bound )
+            lb.append(-inf_bound)
         else:
-            lb.append( reaction.bounds[0] )
+            lb.append(reaction.bounds[0])
 
         if reaction.bounds[1] == float("inf"):
-            ub.append( inf_bound )
+            ub.append(inf_bound)
         else:
-            ub.append( reaction.bounds[1] )
+            ub.append(reaction.bounds[1])
 
     lb = np.asarray(lb)
     ub = np.asarray(ub)
@@ -136,10 +136,4 @@ def parse_cobra_model(cobra_model):
     for reac in exchanges_cobra_reactions:
         exchanges.append(reac.id)
 
-
     return lb, ub, S, metabolites, reactions, biomass_index, biomass_function, medium, inter_medium, exchanges
-
-
-
-
-

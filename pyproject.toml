@@ -9,7 +9,7 @@ authors       = [{ name = "Apostolos Chalkis", email = "tolis.chal@gmail.com" }]
 license       = { text = "GPL-3.0-later" }
 dynamic       = ["version"]
 
-requires-python = ">=3.8,<3.11"
+requires-python = ">=3.8,<=3.11"
 dependencies    = [
     "sparseqr>=1.4.1",
     "simplejson>=3.17.2",
