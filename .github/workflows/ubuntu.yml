@@ -68,7 +68,7 @@ jobs:
 
       - name: Install built wheel on the gh VM to run tests (only cp310)
         run: |
-          echo "All wheels in dist/"
+          echo "All wheels in Linux dist/"
           ls dist/
           WHEEL_FILE=$(ls dist/*cp310*manylinux*_x86_64.whl | head -n 1)
           pip install "$WHEEL_FILE"
@@ -186,7 +186,7 @@ jobs:
 
       - name: Install and test the built wheel
         run: |
-          echo "All wheels in dist/"
+          echo "All wheels in macos dist/"
           ls dist/
           WHEEL_FILE=$(ls dist/*cp310*macosx*.whl | head -n 1)
           echo "Installing $WHEEL_FILE"
@@ -227,6 +227,11 @@ jobs:
 
       - name: Install Twine
         run: python -m pip install twine
+
+      - name: List built wheels
+        run: |
+          echo "All wheels built during the distribution-specific jobs (in dist/)"
+          ls dist/
 
       - name: Publish to TestPyPI
         env:
