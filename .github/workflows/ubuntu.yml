@@ -156,8 +156,11 @@ jobs:
 
       - name: Build wheels for macOS
         env:
-          CIBW_BUILD: "cp310-macosx_arm64" # cp310-macosx_x86_64
-          CIBW_ARCHS_MACOS: "arm64" # x86_64
+          # CIBW_BUILD: "cp310-macosx_arm64" # cp310-macosx_x86_64
+          # CIBW_ARCHS_MACOS: "arm64" # x86_64
+          CIBW_BUILD: "cp310-macosx_x86_64"
+          CIBW_ARCHS_MACOS: "x86_64" #
+
           MACOSX_DEPLOYMENT_TARGET: "13.0"
 
         run: |
