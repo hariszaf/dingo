@@ -12,7 +12,7 @@ import sys
 from typing import Dict
 import cobra
 from dingo.loading_models import read_json_file, read_mat_file, read_sbml_file, parse_cobra_model
-from dingo.pyoptinterface_based_impl import fba,fva,inner_ball,remove_redundant_facets
+from dingo.pyoptinterface_based_impl import fba, fva, SOLVERS
 
 class MetabolicNetwork:
     def __init__(self, tuple_args):
@@ -262,6 +262,8 @@ class MetabolicNetwork:
             )
 
     def set_solver(self, solver: str):
+        if solver not in SOLVERS:
+            raise ValueError(f"Solver {solver} is not supported. Supported solvers: {list(SOLVERS.keys())}")
         self._parameters["solver"] = solver
 
     def set_nullspace_method(self, value):

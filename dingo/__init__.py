@@ -31,7 +31,7 @@ from dingo.pyoptinterface_based_impl import fba, fva, inner_ball, remove_redunda
 
 from dingo.volestipy import HPolytope
 
-__version__ = "0.1.7"
+__version__ = "0.1.8"
 
 
 def get_name(args_network):

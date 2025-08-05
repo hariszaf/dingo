@@ -4,16 +4,16 @@ import numpy as np
 import sys
 
 default_solver = "highs"
+SOLVERS        = {"highs": highs, "gurobi": gurobi, "copt": copt, "mosek": mosek}
 
 def set_default_solver(solver_name):
     global default_solver
     default_solver = solver_name
 
 def get_solver(solver_name):
-    solvers = {"highs": highs, "gurobi": gurobi, "copt": copt, "mosek": mosek}
-    if solver_name in solvers:
-        return solvers[solver_name]
-    else: 
+    if solver_name in SOLVERS:
+        return SOLVERS[solver_name]
+    else:
         raise Exception("An unknown solver {solver_name} is requested.")
 
 def dot(c, x):
@@ -361,14 +361,14 @@ def remove_redundant_facets(lb, ub, S, c, opt_percentage=100, solver_name=None):
                 redundant_facet_left = True
 
                 if cnt > 0:
-                    last_idx = indices[cnt-1]
+                    last_idx = indices[cnt - 1]
                     model_iter.set_variable_attribute(
                         v[last_idx], poi.VariableAttribute.LowerBound, lb[last_idx]
                     )
                     model_iter.set_variable_attribute(
                         v[last_idx], poi.VariableAttribute.UpperBound, ub[last_idx]
                     )
-                    
+
                 # objective function
                 obj = poi.ExprBuilder(v[i])
 

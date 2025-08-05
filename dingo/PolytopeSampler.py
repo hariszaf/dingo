@@ -19,7 +19,7 @@ from dingo.utils import (
 )
 from dingo.volestipy import HPolytope
 from dingo.MetabolicNetwork import MetabolicNetwork
-from dingo.pyoptinterface_based_impl import remove_redundant_facets
+from dingo.pyoptinterface_based_impl import remove_redundant_facets, SOLVERS
 
 
 class PolytopeSampler:
@@ -353,6 +353,8 @@ class PolytopeSampler:
         self._parameters["remove_redundant_facets"] = value
 
     def set_solver(self, solver):
+        if solver not in SOLVERS:
+            raise ValueError(f"Solver {solver} is not supported. Supported solvers: {list(SOLVERS.keys())}")
         self._parameters["solver"] = solver
 
     def set_distribution(self, value):
