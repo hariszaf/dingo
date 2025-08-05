@@ -52,6 +52,9 @@ jobs:
           pip install --upgrade setuptools wheel cython numpy
           pip install cibuildwheel
 
+      - name: Clean previous builds
+        run: rm -rf build dist *.egg-info
+
       - name: Build wheels for Linux
         env:
           CIBW_BUILD: "cp310-manylinux_x86_64" # Remove -manylinux_x86_64 once everything works fine to build all distributions
@@ -148,6 +151,9 @@ jobs:
         run: |
           pip install --upgrade pip setuptools wheel cython numpy cibuildwheel
 
+      - name: Clean previous builds
+        run: rm -rf build dist *.egg-info
+
       - name: Build wheels for macOS
         env:
           CIBW_BUILD: "cp310-macosx_x86_64"
@@ -242,4 +248,6 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TESTPYPI_API_TOKEN }}
         run: |
+          twine check dist/*
+
           twine upload --repository-url https://test.pypi.org/legacy/ dist/*

@@ -7,6 +7,7 @@
 # Licensed under GNU LGPL.3, see LICENCE file
 
 # This is the setup Python script for building the dingo library
+
 import os
 import numpy
 import platform
@@ -15,7 +16,19 @@ from os.path import join
 from Cython.Build import cythonize
 from setuptools import setup, Extension
 
+# Handles the building of extension modules (e.g.,Cython extensions) during the Python package build process.
+# Then build_ext is used behind the scenes to:
+#     - Run the compiler (e.g., gcc, clang)
+#     - Create shared objects (.so / .pyd)
+#     - Place the built binaries into the right location in the package
+#
+# We subclass build_ext to customize the build process, for example, to:
+#    - Add compiler flags
+#    - Delay importing numpy until it's installed
+#    - Set platform-specific options
+#    - Handle special environment variables
 from setuptools.command.build_ext import build_ext
+
 
 # Determine platform
 current_platform = platform.system()
