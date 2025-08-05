@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name          = "dingo-walk"
 description   = "A python library for metabolic networks sampling and analysis. dingo is part of GeomScale project"
 authors       = [{ name = "Apostolos Chalkis", email = "tolis.chal@gmail.com" }]
-license       = { file = "LICENSE" }
+# license       = { file = "LICENSE" }
 dynamic       = ["version"]
 
 requires-python = ">=3.8,<3.11"

@@ -17,42 +17,6 @@ from setuptools import setup, Extension
 
 from setuptools.command.build_ext import build_ext
 
-
-# # Determine the OS
-# current_platform = platform.system()
-
-# Compiler arguments
-# link_args              = ["-O3", "-fopenmp"]
-# compiler_args          = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR", "-ldl", "-lm", "-fopenmp"]
-# lp_solve_compiler_args = ["-DYY_NEVER_INTERACTIVE", "-DLoadInverseLib=0", "-DLoadLanguageLib=0",
-#                           "-DRoleIsExternalInvEngine", "-DINVERSE_ACTIVE=3", "-DLoadableBlasLib=0"]
-
-# =========================
-# # Add these flags to explicitly disable SIMD extensions on x86
-# disable_simd_flags = ["-mno-sse", "-mno-sse2", "-mno-avx"]
-
-# # Compiler arguments
-# link_args = ["-O3"]
-# compiler_args = ["-std=c++17", "-O3", "-DBOOST_NO_AUTO_PTR", "-ldl", "-lm"]
-# lp_solve_compiler_args = [
-#     "-DYY_NEVER_INTERACTIVE", "-DLoadInverseLib=0", "-DLoadLanguageLib=0",
-#     "-DRoleIsExternalInvEngine", "-DINVERSE_ACTIVE=3", "-DLoadableBlasLib=0"
-# ]
-
-# # Set specific arguments for Linux or macOS
-# if current_platform == "Linux":
-#     link_args.append("-fopenmp")
-#     compiler_args.append("-fopenmp")
-# elif current_platform == "Darwin":  # macOS
-#     link_args.extend(["-Xpreprocessor", "-fopenmp", "-lomp"])
-#     compiler_args.extend(["-Xpreprocessor", "-fopenmp", "-lomp"])
-
-# # Apply SIMD-disabling flags only on x86 systems
-# arch = platform.machine()
-# if arch in ("x86_64", "i386", "i686"):
-#     compiler_args = disable_simd_flags + compiler_args
-# ===========================
-
 # Determine platform
 current_platform = platform.system()
 arch = platform.machine()
@@ -69,7 +33,7 @@ lp_solve_compiler_args = [
 
 base_link_args = ["-O3", "-fopenmp", "-ldl", "-lm"]
 cxx_flags      = ["-O3", "-fopenmp"]
-c_flags        = ["-O3", "-fopenmp"]  # No `-std=c++17`
+c_flags        = ["-O3", "-fopenmp"]
 
 disable_simd_flags = []
 
@@ -161,9 +125,6 @@ suitesparse_dirs = ["/usr/include/suitesparse"]  # Include the SuiteSparse heade
 include_dirs     = volesti_include_dirs + suitesparse_dirs + numpy_dirs
 
 # --- Extension ---
-# print("Using compiler args:", compiler_args)
-# print("Using linker args:", link_args)
-
 volesti_module = Extension(
     name               = "dingo.volestipy",
     language           = "c++",
