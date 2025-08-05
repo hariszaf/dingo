@@ -109,7 +109,7 @@ def fva(lb, ub, S, c, opt_percentage=100, solver_name=None):
             "The number of reactions must be equal to the number of given flux bounds."
         )
 
-    # declare the tolerance that highs and gurobi work properly (we found it experimentally)
+    # Declare the tolerance that highs and gurobi work properly (we found it experimentally)
     tol = 1e-06
 
     m = S.shape[0]
