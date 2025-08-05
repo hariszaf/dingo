@@ -69,21 +69,21 @@ jobs:
           name: linux-wheels
           path: dist/
 
-      # - name: Install built wheel on the gh VM to run tests (only cp310)
-      #   run: |
-      #     echo "All wheels in Linux dist/"
-      #     ls dist/
-      #     WHEEL_FILE=$(ls dist/*cp310*manylinux*_x86_64.whl | head -n 1)
-      #     pip install "$WHEEL_FILE"
+      - name: Install built wheel on the gh VM to run tests (only cp310)
+        run: |
+          echo "All wheels in Linux dist/"
+          ls dist/
+          WHEEL_FILE=$(ls dist/*cp310*manylinux*_x86_64.whl | head -n 1)
+          pip install "$WHEEL_FILE"
 
-      # - name: Run tests
-      #   run: |
-      #     python3 tests/fba.py;
-      #     python3 tests/full_dimensional.py;
-      #     python3 tests/max_ball.py;
-      #     python3 tests/scaling.py;
-      #     python3 tests/sampling.py;
-      #     python3 tests/sampling_no_multiphase.py;
+      - name: Run tests
+        run: |
+          python3 tests/fba.py;
+          python3 tests/full_dimensional.py;
+          python3 tests/max_ball.py;
+          python3 tests/scaling.py;
+          python3 tests/sampling.py;
+          python3 tests/sampling_no_multiphase.py;
 
   # ------------------------------------------------------------------------------------------
 
@@ -190,45 +190,36 @@ jobs:
           name: macos-wheels
           path: dist/
 
-          # for whl in dist/*.whl; do
-          #   unzip "$whl" -d wheel_unpack
-          #   METADATA=$(find wheel_unpack -name METADATA)
-          #   sed -i '' '/^Dynamic: license-file/d' "$METADATA"
-          #   rm "$whl"
-          #   (cd wheel_unpack && zip -r "../$(basename $whl)" .)
-          #   rm -rf wheel_unpack
-          # done
+      - name: Install dependencies and set flags for SuiteSparse
+        run: |
+          export CFLAGS="-I/usr/local/opt/suite-sparse/include/suitesparse"
+          export LDFLAGS="-L/usr/local/opt/suite-sparse/lib"
 
-      # - name: Install dependencies and set flags for SuiteSparse
-      #   run: |
-      #     export CFLAGS="-I/usr/local/opt/suite-sparse/include/suitesparse"
-      #     export LDFLAGS="-L/usr/local/opt/suite-sparse/lib"
+          pip install sparseqr
 
-      #     pip install sparseqr
+      - name: Install and test the built wheel
+        run: |
+          echo "All wheels in macos dist/"
+          ls dist/
+          WHEEL_FILE=$(ls dist/*cp310*macosx*.whl | head -n 1)
+          echo "Installing $WHEEL_FILE"
+          pip install "$WHEEL_FILE"
 
-      # - name: Install and test the built wheel
-      #   run: |
-      #     echo "All wheels in macos dist/"
-      #     ls dist/
-      #     WHEEL_FILE=$(ls dist/*cp310*macosx*.whl | head -n 1)
-      #     echo "Installing $WHEEL_FILE"
-      #     pip install "$WHEEL_FILE"
+      - name: Run tests
+        run: |
+          # Ensures that only the Homebrew-provided libomp.dylib is loaded, avoiding that conflict.
+          export DYLD_LIBRARY_PATH="$HOMEBREW_PREFIX/opt/libomp/lib:$DYLD_LIBRARY_PATH"
 
-      # - name: Run tests
-      #   run: |
-      #     # Ensures that only the Homebrew-provided libomp.dylib is loaded, avoiding that conflict.
-      #     export DYLD_LIBRARY_PATH="$HOMEBREW_PREFIX/opt/libomp/lib:$DYLD_LIBRARY_PATH"
+          python3 tests/fba.py
+          python3 tests/full_dimensional.py
+          python3 tests/max_ball.py
+          python3 tests/scaling.py
+          python3 tests/sampling.py
 
-      #     python3 tests/fba.py
-      #     python3 tests/full_dimensional.py
-      #     python3 tests/max_ball.py
-      #     python3 tests/scaling.py
-      #     python3 tests/sampling.py
+          # For some reason, only sometimes, not always, the test fails on macOS, with the following error:
+          # Assertion failed: (min_arg <= max_arg), function uniform_int_distribution, file uniform_int_distribution.hpp, line 337.
 
-      #     # For some reason, only sometimes, not always, the test fails on macOS, with the following error:
-      #     # Assertion failed: (min_arg <= max_arg), function uniform_int_distribution, file uniform_int_distribution.hpp, line 337.
-
-      #     # python3 tests/sampling_no_multiphase.py
+          # python3 tests/sampling_no_multiphase.py
 
   # ------------------------------------------------------------------------------------------
 
@@ -261,28 +252,32 @@ jobs:
 
       - name: Fix wheels metadata
         run: |
-          mkdir -p fixed_dist
-          for whl in dist/*.whl; do
-            mkdir -p wheel_unpack
-            unzip "$whl" -d wheel_unpack
+          # Variables
+          WHEEL_PATH="dist/dingo_walk-0.1.8-cp310-cp310-macosx_13_0_x86_64.whl"
+          FIXED_WHEEL_PATH="dist/dingo_walk-0.1.8-fixed.whl"
+          TMP_DIR="tmp_whl"
 
-            METADATA=$(find wheel_unpack -name METADATA)
-            sed -i '/^Dynamic: license-file/d' "$METADATA"
+          # Clean up any old temp dirs
+          rm -rf "$TMP_DIR"
+          mkdir "$TMP_DIR"
+          cd "$TMP_DIR"
 
-            fixed_whl="fixed_dist/$(basename "$whl")"
-            (cd wheel_unpack && zip -r "../${fixed_whl}" .)
+          # Unzip the original wheel
+          unzip "../$WHEEL_PATH" > /dev/null
 
-            rm -rf wheel_unpack
-          done
+          # Find the METADATA file
+          METADATA_FILE=$(find . -name METADATA)
 
-          # Replace old wheels with fixed ones
-          rm dist/*.whl
-          mv fixed_dist/*.whl dist/
+          # Remove both 'License-File' and 'Dynamic: license-file' lines
+          grep -v -i -e "^License-File: " -e "^Dynamic: license-file" "$METADATA_FILE" > "${METADATA_FILE}.fixed"
+          mv "${METADATA_FILE}.fixed" "$METADATA_FILE"
 
-      - name: List built wheels after fixing metadata
-        run: |
-          echo "All wheels built during the distribution-specific jobs (in dist/)"
-          ls dist/
+          # Repack the wheel
+          zip -r "../$FIXED_WHEEL_PATH" . > /dev/null
+
+          # Clean up
+          cd ..
+          rm -rf "$TMP_DIR"
 
       - name: Publish to TestPyPI
         env:
