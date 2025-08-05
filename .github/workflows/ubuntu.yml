@@ -242,6 +242,14 @@ jobs:
         run: |
           echo "All wheels built during the distribution-specific jobs (in dist/)"
           ls dist/
+          for whl in dist/*.whl; do
+            unzip "$whl" -d wheel_unpack
+            METADATA=$(find wheel_unpack -name METADATA)
+            sed -i '' '/^Dynamic: license-file/d' "$METADATA"
+            rm "$whl"
+            (cd wheel_unpack && zip -r "../$(basename $whl)" .)
+            rm -rf wheel_unpack
+          done
 
       - name: Publish to TestPyPI
         env:
@@ -249,5 +257,8 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.TESTPYPI_API_TOKEN }}
         run: |
           twine check dist/*
+
+          unzip dist/dingo_walk-0.1.7-cp310-cp310-macosx_13_0_x86_64.whl -d inspect_mac
+          cat inspect_mac/dingo_walk-0.1.7.dist-info/METADATA
 
           twine upload --repository-url https://test.pypi.org/legacy/ dist/*
