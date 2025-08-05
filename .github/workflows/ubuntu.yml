@@ -267,7 +267,14 @@ jobs:
             unzip "$whl" -d wheel_unpack
 
             METADATA=$(find wheel_unpack -name METADATA)
-            sed -i '/^Dynamic: license-file/d' "$METADATA"
+            sed -i '/^License-File: /d;/^Dynamic: license-file/d' "$METADATA"
+
+
+            # Print the final contents of METADATA for verification
+            echo "----- METADATA after cleanup -----"
+            cat "$METADATA"
+            echo "----------------------------------"
+
 
             fixed_whl="fixed_dist/$(basename "$whl")"
             (cd wheel_unpack && zip -r "../${fixed_whl}" .)
