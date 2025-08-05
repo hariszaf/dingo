@@ -62,7 +62,7 @@ jobs:
           CIBW_ARCHS_LINUX: "x86_64"
           CIBW_PYTHON_VERSION: "3.10"
         run: |
-          cibuildwheel --output-dir dist
+          cibuildwheel --platform linux  --output-dir dist
 
       - uses: actions/upload-artifact@v4
         with:
