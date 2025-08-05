@@ -156,8 +156,8 @@ jobs:
 
       - name: Build wheels for macOS
         env:
-          CIBW_BUILD: "cp310-macosx_x86_64"
-          CIBW_ARCHS_MACOS: "x86_64"
+          CIBW_BUILD: "cp310-macosx_arm64" # cp310-macosx_x86_64
+          CIBW_ARCHS_MACOS: "arm64" # x86_64
           MACOSX_DEPLOYMENT_TARGET: "13.0"
 
         run: |
@@ -252,14 +252,36 @@ jobs:
           echo "All wheels built during the distribution-specific jobs (in dist/)"
           ls dist/
 
+      - name: Fix wheels metadata
+        run: |
+          # Parse all wheels in the dist/ directory and remove the 'license-file' line from their METADATA files
+          for whl in dist/*.whl; do
+            # Create a temporary folder to unpack the .whl file
+            mkdir -p wheel_unpack
+
+            # Unzip the .whl file into the temporary folder
+            unzip "$whl" -d wheel_unpack
+
+            # Find the METADATA file
+            METADATA=$(find wheel_unpack -name METADATA)
+
+            # Remove the line containing 'license-file' from the METADATA file
+            sed -i '/^Dynamic: license-file/d' "$METADATA"
+
+            # Re-zip the contents back into a .whl file
+            (cd wheel_unpack && zip -r "../$(basename $whl)" .)
+
+            # Delete the original .whl file after re-packaging
+            rm "$whl"
+
+            # Remove the temporary unpacked folder
+            rm -rf wheel_unpack
+          done
+
       - name: Publish to TestPyPI
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.TESTPYPI_API_TOKEN }}
         run: |
           twine check dist/*
-
-          unzip dist/dingo_walk-0.1.7-cp310-cp310-macosx_13_0_x86_64.whl -d inspect_mac
-          cat inspect_mac/dingo_walk-0.1.7.dist-info/METADATA
-
           twine upload --repository-url https://test.pypi.org/legacy/ dist/*
