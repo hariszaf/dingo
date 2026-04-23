@@ -19,22 +19,23 @@ RUN pip install sparseqr \
 	cobra \ 
 	kaleido
 
-WORKDIR /dingo
+WORKDIR /opt
+
+# Get dingo
+RUN git clone https://github.com/GeomScale/dingo.git &&\
+	cd dingo &&\
+	git submodule update --init
 
 # Get lp-solve
+WORKDIR /opt/dingo
+
 RUN wget https://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.11/lp_solve_5.5.2.11_source.tar.gz &&\
 	tar xzvf lp_solve_5.5.2.11_source.tar.gz &&\
 	rm lp_solve_5.5.2.11_source.tar.gz
 
-# Get dingo
-RUN git clone https://github.com/GeomScale/dingo.git && \
-	cd dingo && \
-	git submodule update --init
-
 # Get boost library
-WORKDIR /app/dingo
-RUN wget -O boost_1_76_0.tar.bz2 https://boostorg.jfrog.io/artifactory/main/release/1.76.0/source/boost_1_76_0.tar.bz2 && \
-	tar xjf boost_1_76_0.tar.bz2 && \
+RUN wget -O boost_1_76_0.tar.bz2 https://archives.boost.io/release/1.76.0/source/boost_1_76_0.tar.bz2 &&\
+	tar xjf boost_1_76_0.tar.bz2 &&\
 	rm boost_1_76_0.tar.bz2
 
 # Get PySQR
